@@ -40,12 +40,14 @@ public:
 
            if(newNodo->g==x->g){
             x->c+=newNodo->c;
-            Nodo * prev = head;
-            while(x->next!=NULL && prev->next->c!=x->c){
-                prev = prev->next;
+            if(x->c==0){
+                Nodo * prev = head;
+                while(x->next!=NULL && prev->next->c!=x->c){
+                    prev = prev->next;
+                }
+                prev->next = x->next;
+                delete x;
             }
-            prev->next = x->next;
-            delete x;
            }
            else if(x->next==NULL){
             x->next=newNodo;
@@ -62,8 +64,8 @@ public:
 
 int main(){
     Polinomio p = Polinomio();
+    p.add(4,3);
     p.add(8,7);
-    p.add(-4,3);
     p.add(-4,1);
     p.add(4,1);
     p.add(3,39);
