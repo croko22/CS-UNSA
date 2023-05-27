@@ -4,6 +4,7 @@
 #include <array>
 #include <string>
 #include <memory>
+#include <variant>
 
 constexpr int N = 26;
 
@@ -11,9 +12,9 @@ class DTree
 {
 public:
     DTree();
-    void insert(std::string word, int data = 0);
+    void insert(std::string word, std::variant<int, std::string> data);
     void deleteWord(std::string word);
-    int search(std::string word);
+    std::variant<int, std::string> search(std::string word);
     bool startsWith(std::string prefix);
 
 private:

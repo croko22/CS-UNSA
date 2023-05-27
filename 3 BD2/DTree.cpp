@@ -1,18 +1,6 @@
 #include "DTree.h"
 #include "Node.h"
 
-// class DTree::Node
-// {
-// public:
-//     Node(char ch = '\0') : c(ch){};
-//     const char c = '\0';
-//     std::array<std::unique_ptr<Node>, N> children;
-//     // TODO: Esta es la clase hoja donde la data sera un template
-//     bool isWord = false;
-//     int data;
-//     // Hoja<T> *hoja;
-// };
-
 DTree::Node *DTree::getNode(std::string word)
 {
     auto current = root.get();
@@ -31,7 +19,8 @@ DTree::Node *DTree::getNode(std::string word)
 
 DTree::DTree() : root(std::make_unique<Node>('\0')) {}
 
-void DTree::insert(std::string word, int data)
+// void DTree::insert(std::string word, int data)
+void DTree::insert(std::string word, std::variant<int, std::string> data)
 {
     auto current = root.get();
     for (auto &c : word)
@@ -47,6 +36,7 @@ void DTree::insert(std::string word, int data)
         current = child.get();
     }
     current->isWord = true;
+    // current->data = data;
     current->data = data;
 }
 
@@ -96,7 +86,8 @@ void DTree::deleteWord(std::string word)
     }
 }
 
-int DTree::search(std::string word)
+// int DTree::search(std::string word)
+std::variant<int, std::string> DTree::search(std::string word)
 {
     auto node = getNode(word);
     if (node != nullptr && node->isWord)
