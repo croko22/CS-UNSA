@@ -17,8 +17,8 @@ int main(int argc, char const *argv[])
     cout << "Buscando ave, " << std::get<int>(result) << endl;
     result = dtree->search("oso");
     cout << "Buscando oso, " << std::get<std::string>(result) << endl;
-    result = dtree->search("os");
-    cout << "Buscando os, " << std::get<int>(result) << endl;
+    result = dtree->search("ossssssss");
+    cout << "Buscando ossssssss, " << std::get<int>(result) << endl;
     // //* Eliminaciones
     dtree->deleteWord("o");
     result = dtree->search("o");

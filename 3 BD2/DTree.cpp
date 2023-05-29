@@ -19,7 +19,6 @@ DTree::Node *DTree::getNode(std::string word)
 
 DTree::DTree() : root(std::make_unique<Node>('\0')) {}
 
-// void DTree::insert(std::string word, int data)
 void DTree::insert(std::string word, std::variant<int, std::string> data)
 {
     auto current = root.get();
@@ -36,8 +35,7 @@ void DTree::insert(std::string word, std::variant<int, std::string> data)
         current = child.get();
     }
     current->isWord = true;
-    // current->data = data;
-    current->data = data;
+    current->hoja = new Hoja(data);
 }
 
 void DTree::deleteWord(std::string word)
@@ -55,14 +53,13 @@ void DTree::deleteWord(std::string word)
     }
 
     current->isWord = false;
-    current->data = 0;
+    delete current->hoja;
+    current->hoja = nullptr;
 
     for (auto &child : current->children)
     {
         if (child != nullptr)
-        {
             return;
-        }
     }
 
     while (current != root.get() && !current->isWord && current->children.empty())
@@ -78,20 +75,17 @@ void DTree::deleteWord(std::string word)
                 delete child;
                 break;
             }
-
             parent = child;
         }
-
         current = parent;
     }
 }
 
-// int DTree::search(std::string word)
 std::variant<int, std::string> DTree::search(std::string word)
 {
     auto node = getNode(word);
-    if (node != nullptr && node->isWord)
-        return node->data;
+    if (node != nullptr && node->hoja != nullptr && node->isWord)
+        return node->hoja->data;
     else
         return -1;
 }

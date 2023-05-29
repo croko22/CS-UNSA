@@ -6,13 +6,13 @@
 #include <variant>
 #include "DTree.h"
 
-// class Hoja
-// {
-// public:
-//     Hoja(){};
-//     Hoja(std::variant<int, std::string> data) : data(data){};
-//     std::variant<int, std::string> data;
-// };
+class Hoja
+{
+public:
+    Hoja(){};
+    Hoja(std::variant<int, std::string> data) : data(data){};
+    std::variant<int, std::string> data;
+};
 
 class DTree::Node
 {
@@ -22,8 +22,7 @@ public:
     std::array<std::unique_ptr<Node>, N> children;
     bool isWord = false;
     //*CLASE HOJA
-    //? Variant para poder guardar tanto int como string
-    std::variant<int, std::string> data;
+    Hoja *hoja = nullptr;
 };
 
 #endif
