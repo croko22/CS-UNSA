@@ -3,27 +3,29 @@
 #include "DTree.h"
 
 using namespace std;
-
 int main(int argc, char const *argv[])
 {
     DTree *dtree = new DTree();
     //* Inserciones
-    dtree->insert("ave", 15);
-    dtree->insert("o", 45);
-    dtree->insert("oso", "25a");
+    dtree->insert("n", 23);
+    dtree->insert("ninho", "Juan");
+    dtree->insert("ninha", "Maria");
+    dtree->insert("ninhez", 4);
+    dtree->insert("ninhera", 3);
+
+    dtree->insert("aninhado", 174);
     // //* Busquedas
     std::variant<int, std::string> result;
-    result = dtree->search("ave");
-    cout << "Buscando ave, " << std::get<int>(result) << endl;
-    result = dtree->search("oso");
-    cout << "Buscando oso, " << std::get<std::string>(result) << endl;
-    result = dtree->search("ossssssss");
-    cout << "Buscando ossssssss, " << std::get<int>(result) << endl;
+    result = dtree->search("ninhas");
+    cout << "Buscando ninhas, " << std::get<int>(result) << endl;
+
+    result = dtree->search("ninha");
+    cout << "Buscando ninha, " << std::get<string>(result) << endl;
+    result = dtree->search("ninho");
+    cout << "Buscando ninho, " << std::get<string>(result) << endl;
     // //* Eliminaciones
-    dtree->deleteWord("o");
-    result = dtree->search("o");
-    cout << "Buscando o, " << std::get<int>(result) << endl;
-    result = dtree->search("oso");
-    cout << "Buscando oso, " << std::get<std::string>(result) << endl;
+    dtree->deleteWord("ninhera");
+    result = dtree->search("ninhera");
+    cout << "Buscando ninhera, " << std::get<int>(result) << endl;
     return 0;
 }
