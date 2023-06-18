@@ -7,6 +7,8 @@ const int BUFFER_SIZE = 1024;
 std::vector<char> buffer(BUFFER_SIZE + 1, 0);
 
 // TODO: Useful links
+// https://marketsplash.com/tutorials/cpp/cplusplus-ifstream/
+// https://stackoverflow.com/questions/18816126/c-read-the-whole-file-in-buffer
 //  https://opendsa-server.cs.vt.edu/OpenDSA/Books/PIFLAS21/html/index.html
 //  https://github.com/krshrimali/CPP-File-Manager/blob/master/src/FileManager.cpp
 //  https://gist.github.com/andschwa/d120be76ba8ebd66cf50
