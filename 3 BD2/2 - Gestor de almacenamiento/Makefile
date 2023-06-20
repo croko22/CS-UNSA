@@ -17,6 +17,9 @@ HDRS =
 $(TARGET): $(SRCS) $(HDRS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET)
 
+run: $(TARGET)
+	./$(TARGET)
+
 # Regla para limpiar los archivos generados
 clean:
 	rm -f $(TARGET)
