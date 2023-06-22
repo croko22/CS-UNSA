@@ -11,9 +11,7 @@ GestorAlmacenamiento::GestorAlmacenamiento(const std::string &filename)
     file.open(filename, std::ios::in | std::ios::out | std::ios::binary);
 
     if (!file.is_open())
-    {
         throw std::runtime_error("No se pudo abrir el archivo");
-    }
 
     // Lee el número de páginas desde el principio del archivo
     file.seekg(0, std::ios::beg);
@@ -33,9 +31,7 @@ GestorAlmacenamiento::~GestorAlmacenamiento()
 void GestorAlmacenamiento::leerBloque(int numPag, std::vector<char> &buffer)
 {
     if (numPag >= numTotalPags)
-    {
         throw std::runtime_error("Número de página fuera de límites");
-    }
 
     // Mueve el puntero del archivo a la página especificada
     file.seekg(numPag * PAGE_SIZE, std::ios::beg);
@@ -62,9 +58,7 @@ void GestorAlmacenamiento::leerUltimoBloque(std::vector<char> &buffer)
 void GestorAlmacenamiento::leerAnteriorBloque(std::vector<char> &buffer)
 {
     if (posPag == 0)
-    {
         throw std::runtime_error("No se puede leer la página anterior");
-    }
 
     // Mueve a la página anterior y lee su contenido
     posPag--;
@@ -74,9 +68,7 @@ void GestorAlmacenamiento::leerAnteriorBloque(std::vector<char> &buffer)
 void GestorAlmacenamiento::leerSiguienteBloque(std::vector<char> &buffer)
 {
     if (posPag == numTotalPags - 1)
-    {
         throw std::runtime_error("No se puede leer la siguiente página");
-    }
 
     // Mueve a la siguiente página y lee su contenido
     posPag++;
@@ -92,9 +84,7 @@ void GestorAlmacenamiento::leerBloqueActual(std::vector<char> &buffer)
 void GestorAlmacenamiento::escribirBloque(int numPag, const std::vector<char> &buffer)
 {
     if (numPag >= numTotalPags)
-    {
         throw std::runtime_error("Número de página fuera de límites");
-    }
 
     // Mueve el puntero del archivo a la página especificada
     file.seekp(numPag * PAGE_SIZE, std::ios::beg);

@@ -22,12 +22,14 @@ void printMenu()
 
 int main()
 {
-    std::string filename;
-    std::cout << "Ingrese el nombre del archivo: ";
-    std::cin >> filename;
+    //? Nombre del archivo
+    // std::string filename;
+    // std::cout << "Ingrese el nombre del archivo: ";
+    // std::cin >> filename;
 
     // Crear una instancia de GestorAlmacenamiento
-    GestorAlmacenamiento gestor(filename);
+    // GestorAlmacenamiento gestor(filename);
+    GestorAlmacenamiento gestor("file.txt");
 
     int option;
     std::vector<char> buffer(PAGE_SIZE, 0);
@@ -43,10 +45,7 @@ int main()
             gestor.leerPrimerBloque(buffer);
             std::cout << "Contenido del primer bloque: " << std::endl;
             // Imprimir el contenido del bloque
-            for (const char &c : buffer)
-            {
-                std::cout << c;
-            }
+            std::cout << buffer.data() << std::endl;
             std::cout << std::endl;
             break;
 
@@ -54,10 +53,7 @@ int main()
             gestor.leerUltimoBloque(buffer);
             std::cout << "Contenido del último bloque: " << std::endl;
             // Imprimir el contenido del bloque
-            for (const char &c : buffer)
-            {
-                std::cout << c;
-            }
+            std::cout << buffer.data() << std::endl;
             std::cout << std::endl;
             break;
 
@@ -65,10 +61,7 @@ int main()
             gestor.leerAnteriorBloque(buffer);
             std::cout << "Contenido del bloque anterior: " << std::endl;
             // Imprimir el contenido del bloque
-            for (const char &c : buffer)
-            {
-                std::cout << c;
-            }
+            std::cout << buffer.data() << std::endl;
             std::cout << std::endl;
             break;
 
@@ -76,10 +69,7 @@ int main()
             gestor.leerSiguienteBloque(buffer);
             std::cout << "Contenido del bloque siguiente: " << std::endl;
             // Imprimir el contenido del bloque
-            for (const char &c : buffer)
-            {
-                std::cout << c;
-            }
+            std::cout << buffer.data() << std::endl;
             std::cout << std::endl;
             break;
 
@@ -87,10 +77,7 @@ int main()
             gestor.leerBloqueActual(buffer);
             std::cout << "Contenido del bloque actual: " << std::endl;
             // Imprimir el contenido del bloque
-            for (const char &c : buffer)
-            {
-                std::cout << c;
-            }
+            std::cout << buffer.data() << std::endl;
             std::cout << std::endl;
             break;
 
