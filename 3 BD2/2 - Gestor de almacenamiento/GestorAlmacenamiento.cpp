@@ -32,7 +32,7 @@ void GestorAlmacenamiento::leerBloque(int numPag, std::vector<char> &buffer)
 {
     if (numPag >= numTotalPags)
         throw std::runtime_error("Número de página fuera de límites");
-
+    std::cout<<"Leyendo pagina "<<numPag<<std::endl;
     // Mueve el puntero del archivo a la página especificada
     file.seekg(numPag * PAGE_SIZE, std::ios::beg);
 
