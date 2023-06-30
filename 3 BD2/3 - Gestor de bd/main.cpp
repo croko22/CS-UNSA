@@ -25,6 +25,7 @@ int main()
     // Useful links
     // TODO: Implementar LRU, MRU and Clock
     // TODO: Read the titanic csv
+    // https://classroom.google.com/u/0/c/NjEwNTMzOTQzNjgz/a/NjE1MjgwNDQ0ODAw/details
     //  https://github.com/datasciencedojo/datasets/blob/master/titanic.csv
     //  https://stackoverflow.com/questions/67206032/c-reading-a-table-from-a-text-file
     //  https://cplusplus.com/reference/ostream/ostream/put/
