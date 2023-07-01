@@ -87,18 +87,12 @@ void GestorAlmacenamiento::escribirBloque(int numPag, const std::vector<char> &b
 
     // Mueve el puntero del archivo a la página especificada
     file.seekp(numPag * PAGE_SIZE, std::ios::beg);
-
-    // Maneja los casos donde el tamaño del búfer es menor o mayor que PAGE_SIZE
-    if (buffer.size() != PAGE_SIZE)
-    {
-        std::vector<char> temp(PAGE_SIZE - buffer.size(), '0');
-        temp.insert(temp.begin(), buffer.begin(), buffer.end());
-        file.write(temp.data(), PAGE_SIZE);
-        return;
-    }
-
-    // Escribe el contenido del búfer en el archivo
-    file.write(buffer.data(), PAGE_SIZE);
+    // Escribe el contenido del búfer en la página
+    std::string str;
+    std::cout << "Ingrese el contenido del bloque: ";
+    std::cin >> str;
+    str.resize(PAGE_SIZE, '0');
+    file << str;
 }
 
 void GestorAlmacenamiento::escribirBloqueActual(const std::vector<char> &buffer)
