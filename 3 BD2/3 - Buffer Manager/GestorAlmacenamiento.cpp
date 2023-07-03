@@ -13,9 +13,10 @@ GestorAlmacenamiento::GestorAlmacenamiento(const std::string &filename)
 
     // Lee el número de páginas desde el principio del archivo
     file.seekg(0, std::ios::beg);
-    int numPages;
-    file.read((char *)&numPages, sizeof(numPages));
-    std::cout << "Number of pages: " << numPages << std::endl;
+    file.read((char *)&numTotalPags, sizeof(int));
+    // int file_size = file.tellg();
+    // numTotalPags = file_size / PAGE_SIZE;
+    std::cout << "Numero de paginas: " << numTotalPags << std::endl;
 
     // Inicializa la posición actual de la página
     posPag = 0;
