@@ -67,11 +67,12 @@ public:
             if (page.get_page_id() == page_id)
             {
                 page.subprocess_count--;
-                if (page.subprocess_count == 0 && page.dirty)
-                {
-                    gestor->escribirBloque(page_id, page.buffer);
-                    std::cout << "Page " << page_id << " was written" << std::endl;
-                }
+                //? Si el contador de pines es cero, la funcion agregar ́a el objeto de pagina al rastreador LRUReplacer.
+                // if (page.subprocess_count == 0 && page.dirty)
+                // {
+                //     gestor->escribirBloque(page_id, page.buffer);
+                //     std::cout << "Page " << page_id << " was written" << std::endl;
+                // }
                 return true;
             }
         }
@@ -84,8 +85,11 @@ public:
         {
             if (page.get_page_id() == page_id)
             {
-                gestor->escribirBloque(page_id, page.buffer);
-                std::cout << "Page " << page_id << " was written" << std::endl;
+                if (page.dirty)
+                {
+                    gestor->escribirBloque(page_id, page.buffer);
+                    std::cout << "Page " << page_id << " was written" << std::endl;
+                }
                 return true;
             }
         }
@@ -95,8 +99,11 @@ public:
     {
         for (Page &page : pages)
         {
-            page.write_page();
-            std::cout << "Page " << page.get_page_id() << " was written" << std::endl;
+            if (page.dirty)
+            {
+                gestor->escribirBloque(page.get_page_id(), page.buffer);
+                std::cout << "Page " << page.get_page_id() << " was written" << std::endl;
+            }
         }
     }
     void DeletePage(int page_id)
@@ -121,16 +128,15 @@ int main()
 
     buffer_pool_manager.NewPage(1);
     buffer_pool_manager.NewPage(2);
+    buffer_pool_manager.NewPage(3);
 
     // Fetch page 1
     Page *page = buffer_pool_manager.FetchPage(1);
     page->read_page();
 
-    // Fetch page 2
+    // Fetch page 2 | read | write buffer
     page = buffer_pool_manager.FetchPage(2);
     page->read_page();
-
-    // Write page 1
     page->write_page();
 
     // Unpin page 2
@@ -138,9 +144,17 @@ int main()
 
     // Flush page 1
     buffer_pool_manager.FlushPage(1);
+    buffer_pool_manager.FlushPage(2);
 
     // Delete page 2
     buffer_pool_manager.DeletePage(2);
+
+    // Fetch page 3
+    page = buffer_pool_manager.FetchPage(3);
+    page->read_page();
+    page->write_page();
+    // Flush all pages
+    buffer_pool_manager.FlushAllPages();
 
     return 0;
 }

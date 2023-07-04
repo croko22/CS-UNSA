@@ -26,6 +26,7 @@ public:
     }
     void write_page()
     {
+        std::cout << "Page " << page_id << " data: ";
         std::cin >> buffer.data();
         subprocess_count++;
         dirty = true;
