@@ -29,6 +29,20 @@ public:
         : gestor(gestor) {}
     Page *FetchPage(int page_id)
     {
+        for (auto it = pages.begin(); it != pages.end(); ++it)
+        {
+            if (it->get_page_id() == page_id)
+            {
+                // If found, move the page to the front (MRU position) of the list
+                std::swap(*it, pages.front());
+                return &pages.front();
+            }
+        }
+        Page new_page(gestor, page_id);
+        new_page.subprocess_count++;
+        //* LRU/MRU
+        pages.front() = new_page;
+        return &pages.front();
         // Page *page = nullptr;
         // for (Page &pg : pages)
         // {
@@ -38,23 +52,17 @@ public:
         //         break;
         //     }
         // }
-
         // if (page)
+        //     std::swap(*page, pages.front());
+        // //* LRU/MRU
+        // if (!page)
         // {
-        //     // Page found, move it to the front (MRU)
-        //     movePageToFront(page_id);
+        //     //? If page not found, replace LRU/MRU or Clock
+        //     Page NewPage(gestor, page_id);
+        //     pages.back() = NewPage;
         //     page->subprocess_count++;
         // }
-        // return page;
-        for (Page &page : pages)
-        {
-            if (page.get_page_id() == page_id)
-            {
-                page.subprocess_count++;
-                return &page;
-            }
-        }
-        return nullptr;
+        // return &pages.front();
     }
     void NewPage(int page_id)
     {
