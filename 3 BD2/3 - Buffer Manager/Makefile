@@ -8,10 +8,10 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall
 
 # Archivos fuente
-SRCS = main.cpp GestorAlmacenamiento.cpp
+SRCS = main.cpp GestorAlmacenamiento.cpp Page.cpp BufferPoolManager.cpp
 
 # Archivos de encabezado
-HDRS = GestorAlmacenamiento.h
+HDRS = GestorAlmacenamiento.h Page.h BufferPoolManager.h
 
 # Regla para compilar y generar el ejecutable
 $(TARGET): $(SRCS) $(HDRS)
