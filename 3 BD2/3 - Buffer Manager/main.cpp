@@ -2,132 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include "GestorAlmacenamiento.h"
-#include "Page.cpp"
-class BufferPoolManager
-{
-private:
-    std::vector<Page> pages;
-    std::shared_ptr<GestorAlmacenamiento> gestor;
-    void *ReplacementStrategy()
-    {
-        return nullptr;
-    }
-    //* LRU/MRU Helper function
-    void movePageToFront(int page_id)
-    {
-        auto it = std::find_if(pages.begin(), pages.end(), [page_id](Page &page)
-                               { return page.get_page_id() == page_id; });
-
-        if (it != pages.end())
-        {
-            std::rotate(pages.begin(), it, it + 1);
-        }
-    }
-
-public:
-    BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor)
-        : gestor(gestor) {}
-    Page *FetchPage(int page_id)
-    {
-        for (auto it = pages.begin(); it != pages.end(); ++it)
-        {
-            if (it->get_page_id() == page_id)
-            {
-                // If found, move the page to the front (MRU position) of the list
-                std::swap(*it, pages.front());
-                return &pages.front();
-            }
-        }
-        Page new_page(gestor, page_id);
-        new_page.subprocess_count++;
-        //* LRU/MRU
-        pages.front() = new_page;
-        return &pages.front();
-        // Page *page = nullptr;
-        // for (Page &pg : pages)
-        // {
-        //     if (pg.get_page_id() == page_id)
-        //     {
-        //         page = &pg;
-        //         break;
-        //     }
-        // }
-        // if (page)
-        //     std::swap(*page, pages.front());
-        // //* LRU/MRU
-        // if (!page)
-        // {
-        //     //? If page not found, replace LRU/MRU or Clock
-        //     Page NewPage(gestor, page_id);
-        //     pages.back() = NewPage;
-        //     page->subprocess_count++;
-        // }
-        // return &pages.front();
-    }
-    void NewPage(int page_id)
-    {
-        pages.push_back(Page(gestor, page_id));
-    }
-    bool UnpinPage(int page_id, bool is_dirty)
-    {
-        for (Page &page : pages)
-        {
-            if (page.get_page_id() == page_id)
-            {
-                page.subprocess_count--;
-                //? Si el contador de pines es cero, la funcion agregar ́a el objeto de pagina al rastreador LRUReplacer.
-                // if (page.subprocess_count == 0 && page.dirty)
-                // {
-                //     gestor->escribirBloque(page_id, page.buffer);
-                //     std::cout << "Page " << page_id << " was written" << std::endl;
-                // }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool FlushPage(int page_id)
-    {
-        for (Page &page : pages)
-        {
-            if (page.get_page_id() == page_id)
-            {
-                if (page.dirty)
-                {
-                    gestor->escribirBloque(page_id, page.buffer);
-                    std::cout << "Page " << page_id << " was written" << std::endl;
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-    void FlushAllPages()
-    {
-        for (Page &page : pages)
-        {
-            if (page.dirty)
-            {
-                gestor->escribirBloque(page.get_page_id(), page.buffer);
-                std::cout << "Page " << page.get_page_id() << " was written" << std::endl;
-            }
-        }
-    }
-    void DeletePage(int page_id)
-    {
-        for (Page &page : pages)
-        {
-            if (page.get_page_id() == page_id)
-            {
-                pages.erase(std::remove_if(pages.begin(), pages.end(), [&](Page &page)
-                                           { return page.get_page_id() == page_id; }),
-                            pages.end());
-                return;
-            }
-        }
-    }
-};
+#include "BufferPoolManager.h"
 
 int main()
 {
@@ -153,6 +28,7 @@ int main()
     // Flush page 1
     buffer_pool_manager.FlushPage(1);
     buffer_pool_manager.FlushPage(2);
+    buffer_pool_manager.PrintFrames();
 
     // Delete page 2
     buffer_pool_manager.DeletePage(2);
@@ -161,8 +37,8 @@ int main()
     page = buffer_pool_manager.FetchPage(3);
     page->read_page();
     page->write_page();
+    buffer_pool_manager.PrintFrames();
     // Flush all pages
     buffer_pool_manager.FlushAllPages();
-
     return 0;
 }
