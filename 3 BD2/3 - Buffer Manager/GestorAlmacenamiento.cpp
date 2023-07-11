@@ -87,7 +87,6 @@ void GestorAlmacenamiento::escribirBloque(int numPag, const std::vector<char> &b
         throw std::runtime_error("Número de página fuera de límites");
     // Mueve el puntero del archivo a la página especificada
     file.seekp(numPag * PAGE_SIZE, std::ios::beg);
-    //? buffer.resize(PAGE_SIZE, '0');
     file << buffer.data();
 }
 

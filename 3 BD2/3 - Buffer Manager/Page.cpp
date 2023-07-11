@@ -26,6 +26,7 @@ void Page::write_page()
 {
     std::cout << "Page " << page_id << " data: ";
     std::cin >> buffer.data();
+    buffer.resize(PAGE_SIZE, 0);
     subprocess_count++;
     dirty = true;
 }
