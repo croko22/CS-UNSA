@@ -1,7 +1,7 @@
 #include "BufferPoolManager.h"
 
-BufferPoolManager::BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor)
-    : gestor(gestor), strategy("LRU")
+BufferPoolManager::BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor, std::string strategy)
+    : gestor(gestor), strategy(strategy)
 {
 }
 
@@ -75,6 +75,7 @@ void BufferPoolManager::FlushAllPages()
     {
         if (page.dirty)
         {
+            // TODO: Arreglar esto, no funciona bien
             gestor->escribirBloque(page.get_page_id(), page.buffer);
             std::cout << "Page " << page.get_page_id() << " was written" << std::endl;
         }

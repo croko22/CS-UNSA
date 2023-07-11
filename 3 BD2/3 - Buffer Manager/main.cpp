@@ -29,8 +29,11 @@ void displaySubMenu()
 int main()
 {
     auto gestor = std::make_shared<GestorAlmacenamiento>("file.txt");
-    BufferPoolManager bufferPoolManager(gestor);
-    bufferPoolManager.NewPage(1);
+    std::string strategy;
+    std::cout << "Ingrese la estrategia de reemplazo (LRU o MRU): ";
+    std::cin >> strategy;
+    BufferPoolManager bufferPoolManager(gestor, strategy);
+    bufferPoolManager.NewPage(0);
 
     int option;
     int page_id;

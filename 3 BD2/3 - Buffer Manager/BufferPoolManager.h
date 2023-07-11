@@ -17,7 +17,7 @@ private:
     std::string strategy;
 
 public:
-    BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor);
+    BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor, std::string strategy);
     Page *FetchPage(int page_id);
     void NewPage(int page_id);
     bool UnpinPage(int page_id, bool is_dirty);
