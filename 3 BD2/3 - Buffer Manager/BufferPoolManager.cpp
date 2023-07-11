@@ -1,9 +1,7 @@
 #include "BufferPoolManager.h"
 
 BufferPoolManager::BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor, std::string strategy)
-    : gestor(gestor), strategy(strategy)
-{
-}
+    : gestor(gestor), strategy(strategy) {}
 
 Page *BufferPoolManager::FetchPage(int page_id)
 {
@@ -13,12 +11,9 @@ Page *BufferPoolManager::FetchPage(int page_id)
         {
             active_page_index = it - pages.begin(); //?CLOCK
             if (strategy == "CLOCK")
-            {
                 return &pages[active_page_index];
-            }
             else
             {
-
                 std::rotate(pages.begin(), it, it + 1);
                 return &pages.front();
             }
@@ -60,6 +55,16 @@ bool BufferPoolManager::UnpinPage(int page_id, bool is_dirty)
         if (page.get_page_id() == page_id)
         {
             page.subprocess_count--;
+            // Mover a la ultima posicion
+            if (page.subprocess_count == 0)
+            {
+                if (strategy == "LRU")
+                    std::rotate(pages.begin(), pages.begin() + 1, pages.end());
+                if (strategy == "MRU")
+                    std::rotate(pages.begin(), pages.end() - 1, pages.end());
+                if (strategy == "CLOCK")
+                    active_page_index = (active_page_index + 1) % pages.size();
+            }
             return true;
         }
     }
