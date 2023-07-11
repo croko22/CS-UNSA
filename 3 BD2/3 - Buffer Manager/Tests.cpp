@@ -1,4 +1,3 @@
-
 void test_LRU()
 {
     auto gestor = std::make_shared<GestorAlmacenamiento>("file.txt");
@@ -14,8 +13,8 @@ void test_LRU()
     page->write_page();
     page->read_page();
 
+    std::cout << "- Impresión de los marcos en el buffer pool" << std::endl;
     bufferPoolManager.PrintFrames();
-    std::cout << "Impresión de los marcos en el buffer pool" << std::endl;
 
     page = bufferPoolManager.FetchPage(3);
 
@@ -23,8 +22,8 @@ void test_LRU()
     bufferPoolManager.UnpinPage(page_id, is_dirty);
     std::cout << "Desanclaje de la página 0" << std::endl;
 
+    std::cout << "- Impresión de los marcos en el buffer pool" << std::endl;
     bufferPoolManager.PrintFrames();
-    std::cout << "Impresión de los marcos en el buffer pool" << std::endl;
 
     bufferPoolManager.FlushPage(page_id);
     std::cout << "Volcado de la página al disco 0" << std::endl;
@@ -32,12 +31,11 @@ void test_LRU()
     bufferPoolManager.DeletePage(page_id);
     std::cout << "Eliminación de la página 0" << std::endl;
 
+    std::cout << "- Impresión de los marcos en el buffer pool" << std::endl;
     bufferPoolManager.PrintFrames();
-    std::cout << "Impresión de los marcos en el buffer pool" << std::endl;
 }
 
 //*CLI
-
 void displayMenu()
 {
     std::cout << "===== Menú del Buffer Pool Manager =====" << std::endl;

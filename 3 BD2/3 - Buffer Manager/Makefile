@@ -8,7 +8,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall
 
 # Archivos fuente
-SRCS = main.cpp GestorAlmacenamiento.cpp Page.cpp BufferPoolManager.cpp
+SRCS = main.cpp GestorAlmacenamiento.cpp Page.cpp BufferPoolManager.cpp 
 
 # Archivos de encabezado
 HDRS = GestorAlmacenamiento.h Page.h BufferPoolManager.h

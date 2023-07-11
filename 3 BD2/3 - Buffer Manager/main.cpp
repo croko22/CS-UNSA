@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "GestorAlmacenamiento.h"
 #include "BufferPoolManager.h"
-#include "TestFunctions.cpp"
+#include "Tests.cpp"
 
 int main()
 {
