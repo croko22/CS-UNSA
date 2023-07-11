@@ -7,6 +7,7 @@ Page::Page(std::shared_ptr<GestorAlmacenamiento> gestor, int page_id)
     : page_id(page_id), gestor(gestor), subprocess_count(0), dirty(false)
 {
     buffer.resize(PAGE_SIZE, 0);
+    gestor->leerBloque(page_id, buffer);
 }
 
 int Page::get_page_id()
@@ -16,7 +17,7 @@ int Page::get_page_id()
 
 void Page::read_page()
 {
-    gestor->leerBloque(page_id, buffer);
+    // gestor->leerBloque(page_id, buffer);
     std::cout << buffer.data() << std::endl;
     subprocess_count++;
 }
