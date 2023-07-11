@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
 #include "GestorAlmacenamiento.h"
 #include "Page.h"
 
@@ -15,6 +14,7 @@ private:
     std::vector<Page> pages;
     std::function<void()> replacement_strategy;
     std::string strategy;
+    int active_page_index;
 
 public:
     BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor, std::string strategy);

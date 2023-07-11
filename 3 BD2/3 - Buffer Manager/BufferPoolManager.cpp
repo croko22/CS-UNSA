@@ -11,11 +11,21 @@ Page *BufferPoolManager::FetchPage(int page_id)
     {
         if (it->get_page_id() == page_id)
         {
-            std::rotate(pages.begin(), it, it + 1);
-            return &pages.front();
+            active_page_index = it - pages.begin(); //?CLOCK
+            if (strategy == "CLOCK")
+            {
+                return &pages[active_page_index];
+            }
+            else
+            {
+
+                std::rotate(pages.begin(), it, it + 1);
+                return &pages.front();
+            }
         }
     }
 
+    //* Replacement strategy
     Page new_page(gestor, page_id);
     new_page.subprocess_count++;
 
@@ -28,6 +38,11 @@ Page *BufferPoolManager::FetchPage(int page_id)
     {
         pages.front() = new_page;
         return &pages.front();
+    }
+    if (strategy == "CLOCK")
+    {
+        active_page_index = (active_page_index + 1) % pages.size();
+        pages[active_page_index] = new_page;
     }
 
     return &pages.front();
@@ -45,7 +60,6 @@ bool BufferPoolManager::UnpinPage(int page_id, bool is_dirty)
         if (page.get_page_id() == page_id)
         {
             page.subprocess_count--;
-
             return true;
         }
     }
@@ -54,17 +68,13 @@ bool BufferPoolManager::UnpinPage(int page_id, bool is_dirty)
 
 bool BufferPoolManager::FlushPage(int page_id)
 {
-    for (Page &page : pages)
+    Page *page = FetchPage(page_id);
+    if (page->dirty)
     {
-        if (page.get_page_id() == page_id)
-        {
-            if (page.dirty)
-            {
-                gestor->escribirBloque(page_id, page.buffer);
-                std::cout << "Page " << page_id << " was written" << std::endl;
-            }
-            return true;
-        }
+        gestor->escribirBloque(page_id, page->buffer);
+        std::cout << "Page " << page_id << " was written" << std::endl;
+        page->dirty = false;
+        return true;
     }
     return false;
 }
@@ -75,9 +85,9 @@ void BufferPoolManager::FlushAllPages()
     {
         if (page.dirty)
         {
-            // TODO: Arreglar esto, no funciona bien
             gestor->escribirBloque(page.get_page_id(), page.buffer);
             std::cout << "Page " << page.get_page_id() << " was written" << std::endl;
+            page.dirty = false;
         }
     }
 }
