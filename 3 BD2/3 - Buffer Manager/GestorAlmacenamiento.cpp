@@ -16,7 +16,7 @@ GestorAlmacenamiento::GestorAlmacenamiento(const std::string &filename)
     file.read((char *)&numTotalPags, sizeof(int));
     // int file_size = file.tellg();
     // numTotalPags = file_size / PAGE_SIZE;
-    std::cout << "Numero de paginas: " << numTotalPags << std::endl;
+    // std::cout << "Numero de paginas: " << numTotalPags << std::endl;
 
     // Inicializa la posición actual de la página
     posPag = 0;
