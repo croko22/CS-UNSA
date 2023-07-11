@@ -31,5 +31,8 @@
 *.out
 *.app
 *.txt
+
+# Specific files
 dtree
 galmacenamiento
+3 BD2/4 - Registros de Longitud Fija y Variable/titanic.bin
