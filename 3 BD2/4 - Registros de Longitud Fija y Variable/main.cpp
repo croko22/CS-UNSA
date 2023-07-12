@@ -8,7 +8,27 @@
 constexpr int PAGE_SIZE = 4096;
 constexpr int RECORD_FIX_LEN = 115;
 
-void fixedLengthRecord() {}
+void readCSVData(std::vector<std::vector<std::string>> &data)
+{
+    std::fstream file("titanic.csv", std::ios::in);
+    std::string line, word;
+    int i = 0;
+    while (std::getline(file, line))
+    {
+        std::vector<std::string> row;
+        std::stringstream s(line);
+        while (std::getline(s, word, ','))
+            row.push_back(word);
+        data.push_back(row);
+        i++;
+        //? Read only 10 rows
+        if (i == 15)
+            break;
+    }
+    file.close();
+    //? Delete first row
+    data.erase(data.begin());
+}
 
 using namespace std;
 int main()
@@ -16,30 +36,9 @@ int main()
     //  TODO: Read the titanic csv
     fstream file("titanic.csv", ios::in);
     vector<vector<string>> data;
-    vector<string> row;
-    string line, word, temp;
-    int i = 0;
+    readCSVData(data);
 
-    //? Fixed length of row
-    while (getline(file, line))
-    {
-        row.clear();
-        stringstream s(line);
-        while (getline(s, word, ','))
-        {
-            row.push_back(word);
-        }
-        data.push_back(row);
-        i++;
-        //? Read only 10 rows
-        if (i == 10)
-            break;
-    }
-    file.close();
-
-    // Delete first row
-    data.erase(data.begin());
-
+    //? Print data
     for (int i = 0; i < data.size(); i++)
     {
         for (int j = 0; j < 12; j++)
@@ -49,10 +48,7 @@ int main()
         cout << endl;
     }
 
-    // Number of records
-    int numRecords = data.size();
-    cout << "Number of records: " << data.size() << endl;
-    // Size of first row in bytes
+    // TODO: (Use in variable size) - Size of first row in bytes
     int size{0};
     for (int i = 0; i < data[2].size(); i++)
     {
@@ -62,6 +58,7 @@ int main()
 
     //* OUTPUT FILE
     //? File header
+    int numRecords = data.size();
     int freeSpace = PAGE_SIZE - (numRecords - 1) * RECORD_FIX_LEN;
     fstream output("titanic.bin", ios::out | ios::binary);
     output.seekp(0, ios::beg);
@@ -99,7 +96,6 @@ int main()
     cout << "Number of records: " << numRecords2 << endl;
     cout << "Record size: " << recordSize << endl;
     cout << "Free space: " << freeSpace2 << endl;
-
     //? Read data Position 4096 | record size 115
     int pos, size2;
     for (int i = 0; i < numRecords2; i++)
@@ -109,7 +105,6 @@ int main()
     }
     //? Read data
     input.seekg(pos + 115, ios::beg);
-
     vector<char> read(size2, ' ');
     input.read(read.data(), size2);
     cout << "Read: " << read.data() << endl;
