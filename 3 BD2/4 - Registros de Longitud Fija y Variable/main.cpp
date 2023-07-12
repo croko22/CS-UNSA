@@ -8,6 +8,7 @@
 constexpr int PAGE_SIZE = 4096;
 constexpr int RECORD_FIX_LEN = 115;
 constexpr int RECORDS_PER_PAGE = PAGE_SIZE * 0.5 / RECORD_FIX_LEN;
+constexpr int RECORDS_TO_LOAD = 50;
 using namespace std;
 
 void readCSVData(std::vector<std::vector<std::string>> &data)
@@ -24,7 +25,7 @@ void readCSVData(std::vector<std::vector<std::string>> &data)
         data.push_back(row);
         i++;
         //? Read only 10 rows
-        if (i == 15)
+        if (i == RECORDS_TO_LOAD)
             break;
     }
     file.close();
@@ -34,32 +35,63 @@ void readCSVData(std::vector<std::vector<std::string>> &data)
 
 void fixedLengthRecord(std::vector<std::vector<std::string>> &data)
 {
-    //* Calculate cuantity of records per page
-    cout << "Records per page: " << RECORDS_PER_PAGE << endl;
     //? File header
     std::string temp{""};
     int numRecords = data.size();
+    int pages = numRecords / RECORDS_PER_PAGE + 1; //* Pages needed
+    cout << "Pages needed: " << pages << endl;
     int freeSpace = PAGE_SIZE - (numRecords - 1) * RECORD_FIX_LEN;
     std::fstream output("titanic.bin", std::ios::out | std::ios::binary);
-    output.seekp(0, std::ios::beg);
-    output << numRecords << " " << RECORD_FIX_LEN << " " << freeSpace << " ";
 
-    //? Write data Position 4096 | record size 115
-    for (int i = 0; i < data.size(); i++)
-        output << 4096 - i * RECORD_FIX_LEN << " " << RECORD_FIX_LEN << " ";
-
-    // Reverse vector and start writing at freeSpace
+    //? WRITE DATA
+    int recordPerCurrentPage = 0;
     std::reverse(data.begin(), data.end());
-    output.seekp(freeSpace, std::ios::beg);
-    for (auto row : data)
+    for (int i = 0; i < pages; i++)
     {
-        temp = "";
-        for (auto col : row)
-            temp += col + " ";
-        //* Complete to 115 with spaces
-        temp.resize(115, ' ');
-        output << temp;
+        recordPerCurrentPage = i != pages - 1 ? RECORDS_PER_PAGE : numRecords % RECORDS_PER_PAGE;
+        output.seekp(i * PAGE_SIZE, std::ios::beg);
+        output << recordPerCurrentPage << " " << RECORD_FIX_LEN << " " << freeSpace << " ";
+        //? Write data Position 4096 | record size 115
+        for (int j = 0; j < recordPerCurrentPage; j++)
+            output << (PAGE_SIZE * (i + 1)) - j * RECORD_FIX_LEN << " " << RECORD_FIX_LEN << " ";
+
+        // output.seekp(freeSpace + PAGE_SIZE * i, std::ios::beg);
+        freeSpace = PAGE_SIZE - (recordPerCurrentPage - 1) * RECORD_FIX_LEN;
+        output.seekp(freeSpace + PAGE_SIZE * i, std::ios::beg);
+        // LIMIT: RECORDS_PER_PAGE
+        for (int j = 0; j < RECORDS_PER_PAGE - 1; j++)
+        {
+            temp = "";
+            for (auto col : data[j + i * RECORDS_PER_PAGE])
+                // for (auto col : data[j + (numRecords - RECORDS_PER_PAGE) - (i * RECORDS_PER_PAGE)])
+                temp += col + " ";
+            //* Complete to 115 with spaces
+            temp.resize(115, ' ');
+            output << temp;
+        }
     }
+
+    // output.seekp(0, std::ios::beg);
+    // output << numRecords << " " << RECORD_FIX_LEN << " " << freeSpace << " ";
+
+    // //? Write data Position 4096 | record size 115
+    // for (int i = 0; i < data.size(); i++)
+    //     output << 4096 - i * RECORD_FIX_LEN << " " << RECORD_FIX_LEN << " ";
+
+    // //* Write one page
+    // // Reverse vector and start writing at freeSpace
+
+    // std::reverse(data.begin(), data.end());
+    // output.seekp(freeSpace, std::ios::beg);
+    // for (auto row : data)
+    // {
+    //     temp = "";
+    //     for (auto col : row)
+    //         temp += col + " ";
+    //     //* Complete to 115 with spaces
+    //     temp.resize(115, ' ');
+    //     output << temp;
+    // }
     output.close();
 }
 
