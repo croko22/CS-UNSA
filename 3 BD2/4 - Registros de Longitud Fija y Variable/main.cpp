@@ -1,11 +1,10 @@
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
+#include <fstream>
 #include <sstream>
-#include <algorithm>
-
 #include <valarray>
+#include <algorithm>
 
 constexpr int PAGE_SIZE = 4096;
 constexpr int RECORD_FIX_LEN = 115;
@@ -42,11 +41,10 @@ void fixedLengthRecord(std::vector<std::vector<std::string>> &data)
     int numRecords = data.size();
     cout << "Pages needed: " << REQUIRED_PAGES << " Records per page: " << RECORDS_PER_PAGE << endl;
     int freeSpace = PAGE_SIZE - (numRecords - 1) * RECORD_FIX_LEN;
-    std::fstream output("titanic.bin", std::ios::out | std::ios::binary);
+    std::fstream output("titanicFL.bin", std::ios::out | std::ios::binary);
 
     //* WRITE DATA
     int recordPerCurrentPage{0};
-    // std::reverse(data.begin(), data.end()); //? Old method
     for (int i = 0; i < REQUIRED_PAGES; i++)
     {
         //? Slice vector copy of size RECORDS_PER_PAGE
@@ -54,7 +52,7 @@ void fixedLengthRecord(std::vector<std::vector<std::string>> &data)
         reverse(slice.begin(), slice.end());
 
         //* File header
-        recordPerCurrentPage = i != REQUIRED_PAGES - 1 ? RECORDS_PER_PAGE : numRecords % RECORDS_PER_PAGE;
+        recordPerCurrentPage = std::min(RECORDS_PER_PAGE, numRecords - i * RECORDS_PER_PAGE);
         freeSpace = PAGE_SIZE - recordPerCurrentPage * RECORD_FIX_LEN;
         output.seekp(i * PAGE_SIZE, std::ios::beg);
         output << recordPerCurrentPage << " " << RECORD_FIX_LEN << " " << freeSpace << " ";
@@ -69,41 +67,73 @@ void fixedLengthRecord(std::vector<std::vector<std::string>> &data)
             temp = "";
             for (auto col : row)
                 temp += col + " ";
-            //* Complete to 115 with spaces
-            temp.resize(115, ' ');
+            //* Complete to RECORD_FIX_LEN with spaces
+            temp.resize(RECORD_FIX_LEN, ' ');
             output << temp;
         }
-
-        // ? Alt method
-        // LIMIT: RECORDS_PER_PAGE
-        // for (int j = 0; j < RECORDS_PER_PAGE - 1; j++)
-        // {
-        //     temp = "";
-        //     // for (auto col : data[j + i * RECORDS_PER_PAGE])
-        //       // for (auto col : data[j + (numRecords - RECORDS_PER_PAGE) - (i * RECORDS_PER_PAGE)])
-        //         temp += col + " ";
-        //     //* Complete to 115 with spaces
-        //     temp.resize(115, ' ');
-        //     output << temp;
-        // }
     }
     output.close();
 }
 
-void variableLenghtRecord(std::vector<std::vector<std::string>> &data)
-{
-    // TODO: (Use in variable size) - Size of first row in bytes
-    int size{0};
-    for (int i = 0; i < data[2].size(); i++)
-    {
-        size += data[2][i].size();
-    }
-    cout << "Size of first row in bytes: " << size << endl;
-}
+// void variableLenghtRecord(std::vector<std::vector<std::string>> &data)
+// {
+//     std::string temp{""};
+//     int numRecords = data.size();
+
+//     int freeSpace = PAGE_SIZE;
+//     cout << "Pages needed: " << REQUIRED_PAGES << " Records per page: " << RECORDS_PER_PAGE << endl;
+//     std::fstream output("titanicVL.bin", std::ios::out | std::ios::binary);
+
+//     //* WRITE DATA
+//     int recordPerCurrentPage{0};
+//     for (int i = 0; i < REQUIRED_PAGES; i++)
+//     {
+//         //? Slice vector copy of size RECORDS_PER_PAGE
+//         vector<vector<string>> slice(data.begin() + i * RECORDS_PER_PAGE, data.begin() + i * RECORDS_PER_PAGE + RECORDS_PER_PAGE);
+//         reverse(slice.begin(), slice.end());
+
+//         //* File header
+//         recordPerCurrentPage = std::min(RECORDS_PER_PAGE, numRecords - i * RECORDS_PER_PAGE);
+//         int curPos{0}, size{0};
+//         freeSpace = PAGE_SIZE - recordPerCurrentPage * RECORD_FIX_LEN;
+//         // freeSpace = PAGE_SIZE;
+//         //*Calculate free space
+//         // for (auto row : slice)
+//         // {
+//         //     for (auto col : row)
+//         //         size += col.size();
+//         //     freeSpace -= size;
+//         // }
+//         output.seekp(i * PAGE_SIZE, std::ios::beg);
+//         output << recordPerCurrentPage << " "
+//                << "777"
+//                << " " << freeSpace << " ";
+//         //? Write data Position 4096 | calculated size
+//         curPos = PAGE_SIZE + (PAGE_SIZE * i);
+//         for (int j = 0; j < recordPerCurrentPage; j++)
+//         {
+//             size = 0;
+//             for (auto sl : slice[j])
+//                 size += sl.size();
+//             output << curPos << " " << size << " ";
+//             curPos -= size;
+//         }
+
+//         output.seekp(freeSpace + PAGE_SIZE * i, std::ios::beg);
+//         //* Iterate over slice
+//         for (auto row : slice)
+//         {
+//             temp = "";
+//             for (auto col : row)
+//                 temp += col + " ";
+//             output << temp;
+//         }
+//     }
+//     output.close();
+// }
 
 int main()
 {
-    //  TODO: Read the titanic csv
     fstream file("titanic.csv", ios::in);
     vector<vector<string>> data;
     readCSVData(data);
@@ -118,9 +148,10 @@ int main()
 
     //* OUTPUT FILE
     fixedLengthRecord(data);
+    // variableLenghtRecord(data);
 
     //? Read binary file
-    fstream input("titanic.bin", ios::in | ios::binary);
+    fstream input("titanicFL.bin", ios::in | ios::binary);
     input.seekg(0, ios::beg);
     int numRecords2, recordSize, freeSpace2;
     input >> numRecords2 >> recordSize >> freeSpace2;
