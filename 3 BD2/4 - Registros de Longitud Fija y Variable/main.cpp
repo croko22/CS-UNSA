@@ -77,12 +77,12 @@ void fixedLengthRecord(std::vector<std::vector<std::string>> &data)
 
 void variableLenghtRecord(std::vector<std::vector<std::string>> &data)
 {
-    int numRecords = data.size();
-    std::cout << "Pages needed: " << REQUIRED_PAGES << " Records per page: " << RECORDS_PER_PAGE << std::endl;
     std::fstream output("titanicVL.bin", std::ios::out | std::ios::binary);
 
     //* WRITE DATA
     int recordPerCurrentPage{0};
+    int numRecords = data.size();
+    //* Iterate over pages
     for (int i = 0; i < REQUIRED_PAGES; i++)
     {
         //? Slice vector copy of size RECORDS_PER_PAGE
@@ -116,6 +116,7 @@ void variableLenghtRecord(std::vector<std::vector<std::string>> &data)
             curPos -= size;
         }
 
+        //* Write records
         //* Iterate over slice
         output.seekp(freeSpace + (PAGE_SIZE * i), std::ios::beg);
         for (auto row : slice)
@@ -127,6 +128,30 @@ void variableLenghtRecord(std::vector<std::vector<std::string>> &data)
         }
     }
     output.close();
+}
+
+void readRecord(const std::string &filename, int pageNumber)
+{
+    std::fstream input(filename, std::ios::in | std::ios::binary);
+    input.seekg(0, std::ios::beg);
+    int numRecords, recordSize, freeSpace;
+    input >> numRecords >> recordSize >> freeSpace;
+    std::cout << "N records | Record size | Free space" << std::endl;
+    std::cout << numRecords << "\t  | " << recordSize << "\t\t| " << freeSpace << std::endl;
+
+    int pos, size;
+    for (int i = 0; i < numRecords; i++)
+    {
+        input >> pos >> size;
+        // std::cout << "Position: " << pos << " Size: " << size << std::endl;
+    }
+
+    // Go to pos and read size
+    input.seekg(pos - size, std::ios::beg);
+    std::vector<char> read(size, ' ');
+    input.read(read.data(), size - 5);
+    std::cout << "Read: " << read.data() << std::endl;
+    input.close();
 }
 
 int main()
@@ -147,27 +172,9 @@ int main()
     fixedLengthRecord(data);
     variableLenghtRecord(data);
 
-    //? Read binary file
-    fstream input("titanicFL.bin", ios::in | ios::binary);
-    input.seekg(0, ios::beg);
-    int numRecords2, recordSize, freeSpace2;
-    input >> numRecords2 >> recordSize >> freeSpace2;
-    cout << "Number of records: " << numRecords2 << endl;
-    cout << "Record size: " << recordSize << endl;
-    cout << "Free space: " << freeSpace2 << endl;
-    //? Read data Position 4096 | record size 115
-    int pos, size2;
-    for (int i = 0; i < numRecords2; i++)
-    {
-        input >> pos >> size2;
-        cout << "Position: " << pos << " Size: " << size2 << endl;
-    }
-    //? Read data
-    input.seekg(pos + 115, ios::beg);
-    vector<char> read(size2, ' ');
-    input.read(read.data(), size2);
-    cout << "Read: " << read.data() << endl;
-    input.close();
-
+    cout << "- FIXED LENGTH RECORD" << endl;
+    readRecord("titanicFL.bin", 0);
+    cout << "- VARIABLE LENGTH RECORD" << endl;
+    readRecord("titanicVL.bin", 0);
     return 0;
 }
