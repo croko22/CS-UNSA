@@ -77,10 +77,7 @@ void fixedLengthRecord(std::vector<std::vector<std::string>> &data)
 
 void variableLenghtRecord(std::vector<std::vector<std::string>> &data)
 {
-    std::string temp{""};
     int numRecords = data.size();
-
-    int freeSpace = PAGE_SIZE;
     std::cout << "Pages needed: " << REQUIRED_PAGES << " Records per page: " << RECORDS_PER_PAGE << std::endl;
     std::fstream output("titanicVL.bin", std::ios::out | std::ios::binary);
 
@@ -95,35 +92,35 @@ void variableLenghtRecord(std::vector<std::vector<std::string>> &data)
         //* File header
         recordPerCurrentPage = std::min(RECORDS_PER_PAGE, numRecords - i * RECORDS_PER_PAGE);
         int curPos{0}, size{0};
-        freeSpace = PAGE_SIZE - recordPerCurrentPage * RECORD_FIX_LEN;
-        // freeSpace = PAGE_SIZE;
         //*Calculate free space
-        // for (auto row : slice)
-        // {
-        //     for (auto col : row)
-        //         size += col.size();
-        //     freeSpace -= size;
-        // }
+        int freeSpace = PAGE_SIZE;
+        for (auto row : slice)
+        {
+            size = 0;
+            for (auto col : row)
+                size += col.size() + 1;
+            freeSpace -= size;
+        }
+        //? Write header
         output.seekp(i * PAGE_SIZE, std::ios::beg);
         output << recordPerCurrentPage << " "
-               << "777"
-               << " " << freeSpace << " ";
+               << "777 " << freeSpace << " ";
         //? Write data Position 4096 | calculated size
         curPos = PAGE_SIZE + (PAGE_SIZE * i);
         for (int j = 0; j < recordPerCurrentPage; j++)
         {
             size = 0;
             for (auto sl : slice[j])
-                size += sl.size();
+                size += sl.size() + 1;
             output << curPos << " " << size << " ";
             curPos -= size;
         }
 
-        output.seekp(freeSpace + PAGE_SIZE * i, std::ios::beg);
         //* Iterate over slice
+        output.seekp(freeSpace + (PAGE_SIZE * i), std::ios::beg);
         for (auto row : slice)
         {
-            std::cout << temp;
+            std::string temp;
             for (auto col : row)
                 temp += col + " ";
             output << temp;
@@ -143,12 +140,12 @@ int main()
     {
         for (int j = 0; j < 12; j++)
             cout << data[i][j] << " ";
-        cout << endl;
+        cout << std::endl;
     }
 
     //* OUTPUT FILE
     fixedLengthRecord(data);
-    // variableLenghtRecord(data);
+    variableLenghtRecord(data);
 
     //? Read binary file
     fstream input("titanicFL.bin", ios::in | ios::binary);
