@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -7,114 +8,176 @@ class BPlusTree
 private:
     struct Node
     {
-        int keys[100];
-        Node *children[101];
-        int n;
+        vector<int> keys;
+        vector<Node *> children;
+        bool isLeaf;
+        Node *parent;
+        Node *nextLeaf;
+
+        Node(bool isLeaf = true, Node *parent = nullptr) : isLeaf(isLeaf), parent(parent), nextLeaf(nullptr) {}
     };
 
     Node *root;
     int order;
 
 public:
-    BPlusTree(int order)
+    BPlusTree(int order) : order(order)
     {
-        this->order = order;
-        root = nullptr;
+        root = new Node();
     }
 
     void insert(int key)
     {
-        Node *node = root;
-        while (node != nullptr)
+        Node *leaf = findLeaf(root, key);
+
+        if (leaf->keys.empty())
         {
-            int i = 0;
-            while (i < node->n && node->keys[i] < key)
-            {
-                i++;
-            }
-            if (i < node->n)
-            {
-                // The key already exists in the tree.
-                return;
-            }
-            else
-            {
-                // The key is not in the tree, so we need to insert it.
-                if (node->n == order - 1)
-                {
-                    // The node is full, so we need to split it.
-                    Node *newNode = new Node();
-                    newNode->n = 0;
-                    for (int j = order - 1; j >= 1; j--)
-                    {
-                        newNode->keys[j - 1] = node->keys[j];
-                    }
-                    newNode->children[0] = node->children[order];
-                    node->children[order] = newNode;
-                    node->n = 1;
-                    node->keys[0] = key;
-                }
-                else
-                {
-                    // The node is not full, so we can just insert the key.
-                    node->keys[node->n++] = key;
-                    node->children[node->n] = nullptr;
-                }
-                return;
-            }
+            leaf->keys.push_back(key);
+        }
+        else
+        {
+            vector<int>::iterator it = lower_bound(leaf->keys.begin(), leaf->keys.end(), key);
+            leaf->keys.insert(it, key);
         }
 
-        // The root is empty, so we need to create a new node and make it the root.
-        root = new Node();
-        root->keys[0] = key;
-        root->n = 1;
-        root->children[0] = nullptr;
+        if (leaf->keys.size() > order - 1)
+        {
+            splitLeaf(leaf);
+        }
     }
 
-    void search(int key)
+    void print()
     {
-        Node *node = root;
-        while (node != nullptr)
+        printTree(root, 0);
+    }
+
+private:
+    Node *findLeaf(Node *node, int key)
+    {
+        while (!node->isLeaf)
         {
             int i = 0;
-            while (i < node->n && node->keys[i] < key)
+            while (i < node->keys.size() && key >= node->keys[i])
             {
                 i++;
             }
-            if (i < node->n && node->keys[i] == key)
+            node = node->children[i];
+        }
+        return node;
+    }
+
+    void splitLeaf(Node *leaf)
+    {
+        Node *newNode = new Node(true, leaf->parent);
+        newNode->nextLeaf = leaf->nextLeaf;
+        leaf->nextLeaf = newNode;
+
+        int middle = leaf->keys.size() / 2;
+        for (int i = middle; i < leaf->keys.size(); i++)
+        {
+            newNode->keys.push_back(leaf->keys[i]);
+        }
+        leaf->keys.erase(leaf->keys.begin() + middle, leaf->keys.end());
+
+        if (leaf->parent == nullptr)
+        {
+            // Creating a new root node
+            Node *newRoot = new Node(false);
+            root = newRoot;
+            leaf->parent = newRoot;
+            newNode->parent = newRoot;
+            newRoot->children.push_back(leaf);
+            newRoot->children.push_back(newNode);
+            newRoot->keys.push_back(newNode->keys[0]);
+        }
+        else
+        {
+            // Insert newNode in the parent node
+            Node *parent = leaf->parent;
+            int newKey = newNode->keys[0];
+
+            vector<int>::iterator it = lower_bound(parent->keys.begin(), parent->keys.end(), newKey);
+            vector<Node *>::iterator child_it = parent->children.begin() + (it - parent->keys.begin()) + 1;
+
+            parent->keys.insert(it, newKey);
+            parent->children.insert(child_it, newNode);
+
+            if (parent->keys.size() > order - 1)
             {
-                // The key was found.
-                cout << "The key " << key << " was found." << endl;
-                return;
-            }
-            else
-            {
-                node = node->children[i];
+                splitNonLeaf(parent);
             }
         }
+    }
 
-        // The key was not found.
-        cout << "The key " << key << " was not found." << endl;
+    void splitNonLeaf(Node *nonLeaf)
+    {
+        Node *newNonLeaf = new Node(false, nonLeaf->parent);
+
+        int middle = nonLeaf->keys.size() / 2;
+        int middleKey = nonLeaf->keys[middle];
+
+        for (int i = middle + 1; i < nonLeaf->keys.size(); i++)
+        {
+            newNonLeaf->keys.push_back(nonLeaf->keys[i]);
+        }
+        nonLeaf->keys.erase(nonLeaf->keys.begin() + middle, nonLeaf->keys.end());
+
+        for (int i = middle + 1; i < nonLeaf->children.size(); i++)
+        {
+            newNonLeaf->children.push_back(nonLeaf->children[i]);
+            nonLeaf->children[i]->parent = newNonLeaf;
+        }
+        nonLeaf->children.erase(nonLeaf->children.begin() + middle + 1, nonLeaf->children.end());
+
+        if (nonLeaf->parent == nullptr)
+        {
+            // Creating a new root node
+            Node *newRoot = new Node(false);
+            root = newRoot;
+            nonLeaf->parent = newRoot;
+            newNonLeaf->parent = newRoot;
+            newRoot->children.push_back(nonLeaf);
+            newRoot->children.push_back(newNonLeaf);
+            newRoot->keys.push_back(middleKey);
+        }
+        else
+        {
+            // Insert newNonLeaf in the parent node
+            Node *parent = nonLeaf->parent;
+
+            vector<int>::iterator it = lower_bound(parent->keys.begin(), parent->keys.end(), middleKey);
+            vector<Node *>::iterator child_it = parent->children.begin() + (it - parent->keys.begin()) + 1;
+
+            parent->keys.insert(it, middleKey);
+            parent->children.insert(child_it, newNonLeaf);
+
+            if (parent->keys.size() > order - 1)
+            {
+                splitNonLeaf(parent);
+            }
+        }
+    }
+
+    void printTree(Node *node, int level)
+    {
+        if (node != nullptr)
+        {
+            cout << "Level " << level << ": ";
+            for (int key : node->keys)
+            {
+                cout << key << " ";
+            }
+            cout << endl;
+
+            if (!node->isLeaf)
+            {
+                for (Node *child : node->children)
+                {
+                    printTree(child, level + 1);
+                }
+            }
+
+            cout << "-----------" << endl;
+        }
     }
 };
-
-// int main()
-// {
-//     BPlusTree tree(3);
-//     tree.insert(1);
-//     tree.insert(2);
-//     tree.insert(3);
-//     tree.insert(4);
-//     tree.insert(5);
-//     tree.insert(6);
-//     tree.insert(7);
-//     tree.insert(8);
-//     tree.insert(9);
-//     tree.insert(10);
-
-//     tree.search(1);
-//     tree.search(5);
-//     tree.search(10);
-
-//     return 0;
-// }
