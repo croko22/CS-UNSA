@@ -2,8 +2,9 @@
 #include <algorithm>
 #include "./GestorA/GestorAlmacenamiento.h"
 #include "./BufferPoolManager/BufferPoolManager.h"
+#include "./BPlusTree/BPlusTree.cpp"
 
-int main()
+void LRU_test()
 {
     std::cout << "- LRU: Least Recently Used" << std::endl;
     // Crear un gestor de almacenamiento
@@ -49,5 +50,24 @@ int main()
 
     std::cout << "- Impresión de los marcos en el buffer pool" << std::endl;
     bufferPoolManager.PrintFrames();
+}
+
+void BPTree_test()
+{
+    BPlusTree tree(4);
+
+    tree.insert(10);
+    tree.insert(20);
+    tree.insert(5);
+    tree.insert(15);
+    tree.insert(25);
+    tree.insert(30);
+
+    tree.print();
+}
+
+int main()
+{
+    BPTree_test();
     return 0;
 }
