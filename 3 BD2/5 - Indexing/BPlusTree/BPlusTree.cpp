@@ -46,6 +46,21 @@ public:
         }
     }
 
+    void getValue(int key)
+    {
+        Node *leaf = findLeaf(root, key);
+
+        vector<int>::iterator it = lower_bound(leaf->keys.begin(), leaf->keys.end(), key);
+        if (it != leaf->keys.end() && *it == key)
+        {
+            cout << "Key " << key << " found" << endl;
+        }
+        else
+        {
+            cout << "Key " << key << " not found" << endl;
+        }
+    }
+
     void print()
     {
         printTree(root, 0);
