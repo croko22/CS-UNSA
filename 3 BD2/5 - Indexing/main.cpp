@@ -62,6 +62,15 @@ void BPTree_test()
     tree.insert(15);
     tree.insert(25);
     tree.insert(30);
+    tree.insert(17);
+    tree.insert(27);
+    tree.insert(28);
+    tree.insert(29);
+    tree.insert(31);
+    tree.insert(32);
+
+    tree.getValue(10);
+    tree.getValue(77);
 
     tree.print();
 }
