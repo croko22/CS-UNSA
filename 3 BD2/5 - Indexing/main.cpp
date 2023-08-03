@@ -5,6 +5,7 @@
 #include "./BPlusTree/BPlusTree.cpp"
 // TODO:
 //  1. Preguntar por el uso de la clase Node en BPlusTree (Que datos se guardan en los nodos)
+// 2. Preguntar como estan vinculados BPlusTree y BufferPoolManager
 void LRU_test()
 {
     std::cout << "- LRU: Least Recently Used" << std::endl;
