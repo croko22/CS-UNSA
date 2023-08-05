@@ -18,7 +18,7 @@ private:
     };
 
     Node *root;
-    int order;
+    size_t order;
 
 public:
     BPlusTree(int order) : order(order)
@@ -86,7 +86,7 @@ private:
     {
         while (!node->isLeaf)
         {
-            int i = 0;
+            size_t i = 0;
             while (i < node->keys.size() && key >= node->keys[i])
             {
                 i++;
@@ -103,7 +103,7 @@ private:
         leaf->nextLeaf = newNode;
 
         int middle = leaf->keys.size() / 2;
-        for (int i = middle; i < leaf->keys.size(); i++)
+        for (size_t i = middle; i < leaf->keys.size(); i++)
         {
             newNode->keys.push_back(leaf->keys[i]);
         }
@@ -146,13 +146,13 @@ private:
         int middle = nonLeaf->keys.size() / 2;
         int middleKey = nonLeaf->keys[middle];
 
-        for (int i = middle + 1; i < nonLeaf->keys.size(); i++)
+        for (size_t i = middle + 1; i < nonLeaf->keys.size(); i++)
         {
             newNonLeaf->keys.push_back(nonLeaf->keys[i]);
         }
         nonLeaf->keys.erase(nonLeaf->keys.begin() + middle, nonLeaf->keys.end());
 
-        for (int i = middle + 1; i < nonLeaf->children.size(); i++)
+        for (size_t i = middle + 1; i < nonLeaf->children.size(); i++)
         {
             newNonLeaf->children.push_back(nonLeaf->children[i]);
             nonLeaf->children[i]->parent = newNonLeaf;
