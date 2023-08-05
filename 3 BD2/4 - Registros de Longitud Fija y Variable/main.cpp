@@ -9,7 +9,7 @@
 constexpr int PAGE_SIZE = 4096;
 constexpr int RECORD_FIX_LEN = 115;
 constexpr int RECORDS_PER_PAGE = PAGE_SIZE * 0.5 / RECORD_FIX_LEN;
-constexpr int RECORDS_TO_LOAD = 50; // Working with 50 | 500 records
+constexpr int RECORDS_TO_LOAD = 892; // Working with 50 | 500 records
 constexpr int REQUIRED_PAGES = (RECORDS_TO_LOAD / RECORDS_PER_PAGE) + (RECORDS_TO_LOAD % RECORDS_PER_PAGE > 0 ? 1 : 0);
 using namespace std;
 
