@@ -3,13 +3,19 @@
 #include "./GestorA/GestorAlmacenamiento.h"
 #include "./BufferPoolManager/BufferPoolManager.h"
 #include "./BPlusTree/BPlusTree.cpp"
+constexpr int PAGE_SIZE = 4096;
+constexpr int REG_SIZE = 12;
+constexpr int REG_PER_BLOCK = PAGE_SIZE / REG_SIZE + 1;
+constexpr int TOTAL_REGS = 891;
+constexpr int TOTAL_BLOCKS = TOTAL_REGS / REG_PER_BLOCK + 1;
+constexpr int TOTAL_PAGES = TOTAL_REGS / 17 + 1;
+constexpr int TOTAL_NODES = TOTAL_REGS / REG_PER_BLOCK + 1;
+
 // TODO:
 //  1. Preguntar por el uso de la clase Node en BPlusTree (Que datos se guardan en los nodos)
 // 2. Preguntar como estan vinculados BPlusTree y BufferPoolManager
 void LRU_test()
 {
-    std::cout << "- LRU: Least Recently Used" << std::endl;
-    // Crear un gestor de almacenamiento
     auto gestor = std::make_shared<GestorAlmacenamiento>("file.txt");
 
     // Crear un BufferPoolManager con la estrategia especificada
@@ -79,6 +85,63 @@ void BPTree_test()
 
 int main()
 {
-    BPTree_test();
+    // BPTree_test();
+    std::cout << REG_PER_BLOCK << " " << TOTAL_BLOCKS << " " << TOTAL_PAGES << " " << TOTAL_NODES << endl;
+    //? Process file to get registers addresses for the B+ tree
+    // Read register
+    ifstream file("titanicFL.bin");
+    //* Save page number
+    int register_per_current_block, temp, address;
+    //? Checkpoint vals
+    int remaining_regs = REG_PER_BLOCK;
+    bool checkpoint = false;
+    //* Iterate TOTAL_NODES times
+    // for (int k = 0; k < TOTAL_NODES; k++)
+    // {
+    //     vector<tuple<int, int, int>> registers;
+
+    //     if (checkpoint)
+    //     {
+    //         for (int i = 0; i < remaining_regs; i++)
+    //         {
+    //             file >> address >> temp;
+    //             registers.push_back(make_tuple(i + k * 17, k, address));
+    //         }
+    //     }
+    // }
+    //* Save registers <register_number, page_address, register_address>
+    vector<tuple<int, int, int>> registers;
+    //* Iterate REG_PER_BLOCK/17 times
+    for (int j = 0; j < REG_PER_BLOCK / 17 + 1; j++)
+    {
+        file.seekg(j * PAGE_SIZE, ios::beg);
+        file >> register_per_current_block >> temp >> temp;
+        // std::cout << register_per_current_block << endl;
+        for (int i = 1; i < register_per_current_block + 1; i++)
+        {
+            file >> address >> temp;
+            registers.push_back(make_tuple(i + j * 17, j, address));
+            if (i + j * 17 == REG_PER_BLOCK)
+            {
+                std::cout << "Last register: " << i + j * 17 << endl;
+                //*Checkpoint
+                checkpoint = true;
+                remaining_regs = register_per_current_block - i;
+                std::cout << "Remaining registers: " << remaining_regs << endl;
+                break;
+            }
+        }
+    }
+    //*Print registers
+    for (auto &reg : registers)
+    {
+        std::cout << get<0>(reg) << " " << get<1>(reg) << " " << get<2>(reg) << endl;
+    }
+
+    vector<char> buffer(115);
+    file.seekg(get<2>(registers.at(300)), ios::beg);
+    file.read(buffer.data(), 115);
+    std::cout << buffer.data() << endl;
+
     return 0;
 }
