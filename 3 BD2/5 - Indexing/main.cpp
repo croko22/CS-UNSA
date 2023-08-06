@@ -93,53 +93,95 @@ int main()
     //* Save page number
     int register_per_current_block, temp, address;
     //? Checkpoint vals
-    int remaining_regs = REG_PER_BLOCK;
+    int last_reg_n = 0;
+    int last_page_n = 0;
     bool checkpoint = false;
+    bool stop = false;
+    // TODO: TERMINAR
     //* Iterate TOTAL_NODES times
-    // for (int k = 0; k < TOTAL_NODES; k++)
-    // {
-    //     vector<tuple<int, int, int>> registers;
+    vector<tuple<int, int, int>> registers;
 
-    //     if (checkpoint)
+    for (int k = 0; k <= TOTAL_NODES - 1; k++)
+    {
+        // vector<tuple<int, int, int>> registers;
+        int remaining_regs = REG_PER_BLOCK;
+
+        if (checkpoint)
+        {
+            for (int i = 0; i < remaining_regs; i++)
+            {
+                file >> address >> temp;
+                registers.push_back(make_tuple(i + last_reg_n, last_page_n, address));
+            }
+        }
+        //* Iterate REG_PER_BLOCK/17 times
+        for (int j = 0; j < REG_PER_BLOCK / 17 + 1; j++)
+        {
+            if (stop)
+                break;
+            file.seekg(j * PAGE_SIZE + k * PAGE_SIZE * (REG_PER_BLOCK / 17 + 1), ios::beg);
+
+            file >> register_per_current_block >> temp >> temp;
+            // std::cout << register_per_current_block << endl;
+            for (int i = 1; i < register_per_current_block + 1; i++)
+            {
+                file >> address >> temp;
+                registers.push_back(make_tuple(i + j * 17 + (k * REG_PER_BLOCK), j + (k * REG_PER_BLOCK / 17 + 1), address));
+                if (i + j * 17 == REG_PER_BLOCK)
+                {
+                    std::cout << "Last register: " << i + j * 17 + (k * REG_PER_BLOCK) << endl;
+                    //*Checkpoint
+                    checkpoint = true;
+                    remaining_regs = register_per_current_block - i;
+                    last_reg_n = i + j * 17;
+                    last_page_n = j;
+                    std::cout << "Remaining registers: " << remaining_regs << endl;
+                    break;
+                }
+                if (i + j * 17 + (k * REG_PER_BLOCK) == TOTAL_REGS)
+                {
+                    std::cout << "Last register: " << i + j * 17 + (k * REG_PER_BLOCK) << endl;
+                    remaining_regs = 7;
+                    std::cout << "Remaining registers: " << remaining_regs << endl;
+                    checkpoint = true;
+                    stop = true;
+                    break;
+                }
+            }
+        }
+        checkpoint = false;
+    }
+    //* Save registers <register_number, page_address, register_address>
+    // vector<tuple<int, int, int>> registers;
+    // //* Iterate REG_PER_BLOCK/17 times
+    // for (int j = 0; j < REG_PER_BLOCK / 17 + 1; j++)
+    // {
+    //     file.seekg(j * PAGE_SIZE, ios::beg);
+    //     file >> register_per_current_block >> temp >> temp;
+    //     // std::cout << register_per_current_block << endl;
+    //     for (int i = 1; i < register_per_current_block + 1; i++)
     //     {
-    //         for (int i = 0; i < remaining_regs; i++)
+    //         file >> address >> temp;
+    //         registers.push_back(make_tuple(i + j * 17, j, address));
+    //         if (i + j * 17 == REG_PER_BLOCK)
     //         {
-    //             file >> address >> temp;
-    //             registers.push_back(make_tuple(i + k * 17, k, address));
+    //             std::cout << "Last register: " << i + j * 17 << endl;
+    //             //*Checkpoint
+    //             checkpoint = true;
+    //             remaining_regs = register_per_current_block - i;
+    //             last_reg_n = i + j * 17;
+    //             last_page_n = j;
+    //             std::cout << "Remaining registers: " << remaining_regs << endl;
+    //             break;
     //         }
     //     }
     // }
-    //* Save registers <register_number, page_address, register_address>
-    vector<tuple<int, int, int>> registers;
-    //* Iterate REG_PER_BLOCK/17 times
-    for (int j = 0; j < REG_PER_BLOCK / 17 + 1; j++)
-    {
-        file.seekg(j * PAGE_SIZE, ios::beg);
-        file >> register_per_current_block >> temp >> temp;
-        // std::cout << register_per_current_block << endl;
-        for (int i = 1; i < register_per_current_block + 1; i++)
-        {
-            file >> address >> temp;
-            registers.push_back(make_tuple(i + j * 17, j, address));
-            if (i + j * 17 == REG_PER_BLOCK)
-            {
-                std::cout << "Last register: " << i + j * 17 << endl;
-                //*Checkpoint
-                checkpoint = true;
-                remaining_regs = register_per_current_block - i;
-                std::cout << "Remaining registers: " << remaining_regs << endl;
-                break;
-            }
-        }
-    }
     //*Print registers
     for (auto &reg : registers)
-    {
         std::cout << get<0>(reg) << " " << get<1>(reg) << " " << get<2>(reg) << endl;
-    }
 
     vector<char> buffer(115);
-    file.seekg(get<2>(registers.at(300)), ios::beg);
+    // file.seekg(get<2>(registers.at(300)), ios::beg);
     file.read(buffer.data(), 115);
     std::cout << buffer.data() << endl;
 
