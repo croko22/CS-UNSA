@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "./GestorA/GestorAlmacenamiento.h"
 #include "./BufferPoolManager/BufferPoolManager.h"
-#include "./BPlusTree/BPlusTree.cpp"
+#include "./BPlusTree/BPlusTree.h"
 constexpr int PAGE_SIZE = 4096;
 constexpr int REG_SIZE = 12;
 constexpr int REG_PER_BLOCK = PAGE_SIZE / REG_SIZE + 1;
@@ -104,9 +104,28 @@ int main()
             registers.push_back(make_tuple(i + j * 17, j, address));
         }
     }
-
-    for (auto &reg : registers)
-        std::cout << get<0>(reg) << " " << get<1>(reg) << " " << get<2>(reg) << endl;
+    vector<vector<tuple<int, int, int>>> Nodes;
+    for (int i = 0; i < TOTAL_NODES; i++)
+    {
+        vector<tuple<int, int, int>> slice(registers.begin() + i * REG_PER_BLOCK, min(registers.begin() + (i + 1) * REG_PER_BLOCK, registers.end()));
+        Nodes.push_back(slice);
+    }
+    for (auto &node : Nodes)
+    {
+        cout << "Node: " << endl;
+        for (auto &reg : node)
+        {
+            std::cout << get<0>(reg) << " " << get<1>(reg) << " " << get<2>(reg) << endl;
+        }
+        std::cout << endl;
+    }
+    //? Create B+ tree
+    BPlusTree tree(4);
+    for (auto &node : Nodes)
+    {
+        tree.insert(get<0>(node.at(0)));
+    }
+    tree.print();
 
     vector<char> buffer(115);
     file.seekg(get<2>(registers.at(800)), ios::beg);
