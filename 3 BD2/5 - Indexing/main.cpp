@@ -4,15 +4,16 @@
 #include "./BufferPoolManager/BufferPoolManager.h"
 #include "./BPlusTree/BPlusTree.h"
 constexpr int PAGE_SIZE = 4096;
-constexpr int REG_SIZE = 12;
+//?Old val
+// constexpr int REG_SIZE = 12;
+constexpr int REG_SIZE = 24;
 constexpr int REG_PER_BLOCK = PAGE_SIZE / REG_SIZE + 1;
 constexpr int TOTAL_REGS = 891;
 constexpr int TOTAL_PAGES = TOTAL_REGS / 17 + 1;
 constexpr int TOTAL_NODES = TOTAL_REGS / REG_PER_BLOCK + 1;
 
 // TODO:
-//  1. Preguntar por el uso de la clase Node en BPlusTree (Que datos se guardan en los nodos)
-// 2. Preguntar como estan vinculados BPlusTree y BufferPoolManager
+// 1. Preguntar como se guardarian las direcciones en los nodos hoja
 void LRU_test()
 {
     auto gestor = std::make_shared<GestorAlmacenamiento>("file.txt");
@@ -59,41 +60,17 @@ void LRU_test()
     bufferPoolManager.PrintFrames();
 }
 
-void BPTree_test()
-{
-    BPlusTree tree(4);
-
-    tree.insert(10);
-    tree.insert(20);
-    tree.insert(5);
-    tree.insert(15);
-    tree.insert(25);
-    tree.insert(30);
-    tree.insert(17);
-    tree.insert(27);
-    tree.insert(28);
-    tree.insert(29);
-    tree.insert(31);
-    tree.insert(32);
-
-    tree.getValue(10);
-    tree.getValue(77);
-
-    tree.print();
-}
-
 // auto generateNodes()
 
 int main()
 {
-    // BPTree_test();
     std::cout << REG_PER_BLOCK << " " << TOTAL_PAGES << " " << TOTAL_NODES << endl;
-    //? Process file to get registers addresses for the B+ tree
+    //? Process file to get records addresses for the B+ tree
     ifstream file("titanicFL.bin");
     //* Save page number
     int register_per_current_block, temp, address;
     //* Iterate TOTAL_NODES times
-    vector<tuple<int, int, int>> registers;
+    vector<tuple<int, int, int>> records;
     for (int j = 0; j < TOTAL_PAGES; j++)
     {
         file.seekg(j * PAGE_SIZE, ios::beg);
@@ -101,13 +78,13 @@ int main()
         for (int i = 1; i < register_per_current_block + 1; i++)
         {
             file >> address >> temp;
-            registers.push_back(make_tuple(i + j * 17, j, address));
+            records.push_back(make_tuple(i + j * 17, j, address));
         }
     }
     vector<vector<tuple<int, int, int>>> Nodes;
     for (int i = 0; i < TOTAL_NODES; i++)
     {
-        vector<tuple<int, int, int>> slice(registers.begin() + i * REG_PER_BLOCK, min(registers.begin() + (i + 1) * REG_PER_BLOCK, registers.end()));
+        vector<tuple<int, int, int>> slice(records.begin() + i * REG_PER_BLOCK, min(records.begin() + (i + 1) * REG_PER_BLOCK, records.end()));
         Nodes.push_back(slice);
     }
     for (auto &node : Nodes)
@@ -119,6 +96,20 @@ int main()
         }
         std::cout << endl;
     }
+    // TODO: Crear un archivo index.bin para guardar los nodos
+    fstream index("index.bin", ios::out | ios::binary);
+    //?Header values (root, order, total_nodes)
+    int root = 0, order = 4, total_nodes = TOTAL_NODES, count = 0;
+    // index << root << " " << order << " " << total_nodes << endl;
+    index << root << " " << order << " " << total_nodes << " ";
+    for (auto &node : Nodes)
+    {
+        index.seekg(count * PAGE_SIZE + 12, ios::beg);
+        for (auto &reg : node)
+            index << get<0>(reg) << " " << get<1>(reg) << " " << get<2>(reg) << " ";
+        index << endl;
+        count++;
+    }
     //? Create B+ tree
     BPlusTree tree(4);
     for (auto &node : Nodes)
@@ -128,7 +119,7 @@ int main()
     tree.print();
 
     vector<char> buffer(115);
-    file.seekg(get<2>(registers.at(800)), ios::beg);
+    file.seekg(get<2>(records.at(800)), ios::beg);
     file.read(buffer.data(), 115);
     std::cout << buffer.data() << endl;
 
