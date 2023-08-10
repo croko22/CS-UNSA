@@ -10,7 +10,7 @@
 class GestorAlmacenamiento
 {
 public:
-    GestorAlmacenamiento(const std::string &filename);
+    GestorAlmacenamiento(const std::string &filename, int headerSize);
     ~GestorAlmacenamiento();
 
     void leerBloque(int numPag, std::vector<char> &buffer);
@@ -26,6 +26,7 @@ public:
 
 private:
     int numTotalPags;
+    int headerSize;
     int posPag;
     std::fstream file;
 };

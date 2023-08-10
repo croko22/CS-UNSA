@@ -2,7 +2,8 @@
 
 constexpr int PAGE_SIZE = 4096;
 
-GestorAlmacenamiento::GestorAlmacenamiento(const std::string &filename)
+GestorAlmacenamiento::GestorAlmacenamiento(const std::string &filename, int headerSize)
+    : headerSize(headerSize)
 {
     // Abre el archivo en modo lectura/escritura/binario
     file.open(filename, std::ios::in | std::ios::out | std::ios::binary);
@@ -24,7 +25,7 @@ void GestorAlmacenamiento::leerBloque(int numPag, std::vector<char> &buffer)
         throw std::runtime_error("Número de página fuera de límites");
     std::cout << "Leyendo pagina " << numPag << std::endl;
     // Mueve el puntero del archivo a la página especificada
-    file.seekg(numPag * PAGE_SIZE + 10, std::ios::beg);
+    file.seekg(numPag * PAGE_SIZE + headerSize, std::ios::beg);
 
     // Lee el contenido de la página en el búfer
     file.read(buffer.data(), PAGE_SIZE);
