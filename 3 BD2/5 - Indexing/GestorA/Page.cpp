@@ -1,7 +1,7 @@
 #include "Page.h"
 #include "GestorAlmacenamiento.h"
 #include <iostream>
-constexpr int PAGE_SIZE = 5; // Tamaño constante de la página
+constexpr int PAGE_SIZE = 4096; // Tamaño constante de la página
 
 Page::Page(std::shared_ptr<GestorAlmacenamiento> gestor, int page_id)
     : page_id(page_id), gestor(gestor), subprocess_count(0), dirty(false)

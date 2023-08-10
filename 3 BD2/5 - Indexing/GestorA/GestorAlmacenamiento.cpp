@@ -1,24 +1,13 @@
 #include "GestorAlmacenamiento.h"
 
-// Define la constante del tamaño de página
-constexpr int PAGE_SIZE = 5;
+constexpr int PAGE_SIZE = 4096;
 
 GestorAlmacenamiento::GestorAlmacenamiento(const std::string &filename)
 {
     // Abre el archivo en modo lectura/escritura/binario
     file.open(filename, std::ios::in | std::ios::out | std::ios::binary);
-
     if (!file.is_open())
         throw std::runtime_error("No se pudo abrir el archivo");
-
-    // Lee el número de páginas desde el principio del archivo
-    file.seekg(0, std::ios::beg);
-    file.read((char *)&numTotalPags, sizeof(int));
-    // int file_size = file.tellg();
-    // numTotalPags = file_size / PAGE_SIZE;
-    // std::cout << "Numero de paginas: " << numTotalPags << std::endl;
-
-    // Inicializa la posición actual de la página
     posPag = 0;
 }
 
@@ -34,7 +23,7 @@ void GestorAlmacenamiento::leerBloque(int numPag, std::vector<char> &buffer)
         throw std::runtime_error("Número de página fuera de límites");
     std::cout << "Leyendo pagina " << numPag << std::endl;
     // Mueve el puntero del archivo a la página especificada
-    file.seekg(numPag * PAGE_SIZE, std::ios::beg);
+    file.seekg(numPag * PAGE_SIZE + 10, std::ios::beg);
 
     // Lee el contenido de la página en el búfer
     file.read(buffer.data(), PAGE_SIZE);

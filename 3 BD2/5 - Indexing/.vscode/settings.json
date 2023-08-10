@@ -2,6 +2,8 @@
     "files.associations": {
         "tuple": "cpp",
         "ostream": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "iostream": "cpp",
+        "stdexcept": "cpp"
     }
 }
