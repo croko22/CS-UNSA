@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+// #include "../BufferPoolManager/BufferPoolManager.h"
 
 using namespace std;
 
@@ -12,24 +13,22 @@ private:
     struct Node
     {
         vector<int> keys;
-        // TODO: Probar cual funciona
-        //  tuple<int, vector<tuple<int, int, int>>> keys;
-        // vector<tuple<int, int, int>> records;
         vector<Node *> children;
         bool isLeaf;
         Node *parent;
         Node *nextLeaf;
 
         Node(bool isLeaf = true, Node *parent = nullptr) : isLeaf(isLeaf), parent(parent), nextLeaf(nullptr) {}
-        // Node(bool isLeaf = true, Node *parent = nullptr, vector<tuple<int, int, int>> records = {}) : isLeaf(isLeaf), parent(parent), nextLeaf(nullptr), records(records) {}
     };
 
+    // TODO: Conexion con el buffer pool manager
+    //  BufferPoolManager indexBufferPoolManager;
+    //  // BufferPoolManager dataBufferPoolManager("data.txt");
     Node *root;
     size_t order;
 
 public:
     BPlusTree(int order);
-
     void insert(int key);
     void deleteNode(int key);
     void getValue(int key);

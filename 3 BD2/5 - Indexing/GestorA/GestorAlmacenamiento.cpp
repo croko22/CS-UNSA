@@ -9,6 +9,7 @@ GestorAlmacenamiento::GestorAlmacenamiento(const std::string &filename)
     if (!file.is_open())
         throw std::runtime_error("No se pudo abrir el archivo");
     posPag = 0;
+    numTotalPags = 100;
 }
 
 GestorAlmacenamiento::~GestorAlmacenamiento()

@@ -43,6 +43,12 @@ void BPlusTree::getValue(int key)
 {
     Node *leaf = findLeaf(root, key);
 
+    if (key < leaf->keys.back())
+    {
+        cout << "Page in index: " << leaf->keys.front() / 170 << endl;
+        return;
+    }
+
     vector<int>::iterator it = lower_bound(leaf->keys.begin(), leaf->keys.end(), key);
     if (it != leaf->keys.end() && *it == key)
     {
