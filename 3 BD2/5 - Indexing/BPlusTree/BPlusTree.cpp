@@ -1,7 +1,7 @@
 #include "BPlusTree.h"
 using namespace std;
 
-BPlusTree::BPlusTree(int order) : order(order)
+BPlusTree::BPlusTree(int order, std::shared_ptr<GestorAlmacenamiento> gestorIndex, std::shared_ptr<GestorAlmacenamiento> gestorData) : order(order), indexbufferPoolManager(gestorIndex, "LRU"), dataBufferPoolManager(gestorData, "LRU")
 {
     root = new Node();
 }
@@ -45,7 +45,37 @@ void BPlusTree::getValue(int key)
 
     if (key < leaf->keys.back())
     {
-        cout << "Page in index: " << leaf->keys.front() / 170 << endl;
+        //* Buscar en el buffer pool manager
+        if (indexbufferPoolManager.GetPageCount() < 3)
+            indexbufferPoolManager.NewPage(leaf->keys.front() / 170);
+        Page *page = indexbufferPoolManager.FetchPage(leaf->keys.front() / 170);
+        page->read_page();
+        //* Convertir buffer a stringstream
+        std::stringstream ss(string(page->buffer.begin(), page->buffer.end()));
+        int total_regs, reg, page_id, address;
+        ss >> total_regs;
+        vector<tuple<int, int, int>> records;
+        for (int i = 0; i < total_regs; i++)
+        {
+            ss >> reg >> page_id >> address;
+            records.push_back(make_tuple(reg, page_id, address));
+        }
+        // for (auto &reg : records)
+        //     std::cout << get<0>(reg) << " " << get<1>(reg) << " " << get<2>(reg) << endl;
+        auto val = records.at(key % 171 - 1);
+        std::cout << get<0>(val) << " " << get<1>(val) << " " << get<2>(val) << endl;
+        page_in_buffer = leaf->keys.front() / 170;
+
+        //* Read data page
+        if (dataBufferPoolManager.GetPageCount() < 3)
+            dataBufferPoolManager.NewPage(get<1>(val));
+        Page *data_page = dataBufferPoolManager.FetchPage(get<1>(val));
+        data_page->read_page();
+        //* Convertir buffer a stringstream
+        string record = data_page->read_record(get<2>(val));
+        std::cout << record << endl;
+        // std::stringstream ss2(string(data_page->buffer.begin(), data_page->buffer.end()));
+        // std::cout << ss2.str() << endl;
         return;
     }
 

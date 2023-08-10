@@ -2,8 +2,10 @@
 #define BPLUSTREE_H
 
 #include <iostream>
+#include <sstream>
 #include <vector>
-// #include "../BufferPoolManager/BufferPoolManager.h"
+#include "../BufferPoolManager/BufferPoolManager.h"
+#include "../GestorA/GestorAlmacenamiento.h"
 
 using namespace std;
 
@@ -22,13 +24,14 @@ private:
     };
 
     // TODO: Conexion con el buffer pool manager
-    //  BufferPoolManager indexBufferPoolManager;
-    //  // BufferPoolManager dataBufferPoolManager("data.txt");
     Node *root;
     size_t order;
+    BufferPoolManager indexbufferPoolManager;
+    BufferPoolManager dataBufferPoolManager;
 
 public:
-    BPlusTree(int order);
+    int page_in_buffer;
+    BPlusTree(int order, std::shared_ptr<GestorAlmacenamiento> gestorIndex, std::shared_ptr<GestorAlmacenamiento> gestorData);
     void insert(int key);
     void deleteNode(int key);
     void getValue(int key);

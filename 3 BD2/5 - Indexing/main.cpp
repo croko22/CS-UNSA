@@ -71,40 +71,14 @@ int main()
     saveNodesToFile(Nodes);
     //? Create B+ tree
     cout << "Cuantity of nodes: " << Nodes.size() << endl;
-    BPlusTree tree(4);
+    auto gestorIndex = std::make_shared<GestorAlmacenamiento>("index.bin", 10);
+    auto gestorData = std::make_shared<GestorAlmacenamiento>("titanicFL.bin", 0);
+    BPlusTree tree(4, gestorIndex, gestorData);
     for (auto &node : Nodes)
         tree.insert(get<0>(node.at(0)));
     tree.print();
     //? Search for a record
     tree.getValue(800);
-    int page_id_index = 800 / 170;
-    //? Load a record from buffer pool
-    auto gestor = std::make_shared<GestorAlmacenamiento>("index.bin");
-    BufferPoolManager bufferPoolManager(gestor, "LRU");
-    bufferPoolManager.NewPage(0);
-    Page *page = bufferPoolManager.FetchPage(page_id_index);
-    // Page *page = bufferPoolManager.FetchPage(1);
-    page->read_page();
-
-    //* Page from index.bin
-
-    std::stringstream ss(string(page->buffer.begin(), page->buffer.end()));
-    int total_regs, reg, page_id, addresss;
-    ss >> total_regs;
-    vector<tuple<int, int, int>> records2;
-    for (int i = 0; i < total_regs; i++)
-    {
-        ss >> reg >> page_id >> addresss;
-        records2.push_back(make_tuple(reg, page_id, addresss));
-    }
-    for (auto &reg : records2)
-        std::cout << get<0>(reg) << " " << get<1>(reg) << " " << get<2>(reg) << endl;
-    //? Read record from file
-    // vector<char> buffer(115);`
-    // auto val = records2.at(800 % 171 - 1);
-    // std::cout << get<0>(val) << " " << get<1>(val) << " " << get<2>(val) << endl;
-    // file.seekg(get<2>(val), ios::beg);
-    // file.read(buffer.data(), 115);
-    // std::cout << buffer.data() << endl;
+    tree.getValue(100);
     return 0;
 }
