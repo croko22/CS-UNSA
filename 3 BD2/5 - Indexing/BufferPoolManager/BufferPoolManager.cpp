@@ -1,6 +1,6 @@
 #include "BufferPoolManager.h"
 
-BufferPoolManager::BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor, std::string strategy)
+BufferPoolManager::BufferPoolManager(std::shared_ptr<GestorAlmacenamiento> gestor, std::string strategy = "LRU")
     : gestor(gestor), strategy(strategy) {}
 
 Page *BufferPoolManager::FetchPage(int page_id)
@@ -113,4 +113,9 @@ void BufferPoolManager::PrintFrames()
         count++;
         std::cout << count << "\t" << page.get_page_id() << "\t" << page.subprocess_count << "\t" << page.dirty << std::endl; // Se imprime información de cada página en el buffer
     }
+}
+
+int BufferPoolManager::GetPageCount()
+{
+    return pages.size(); // Se retorna la cantidad de páginas en el buffer
 }

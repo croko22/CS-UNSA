@@ -25,4 +25,5 @@ public:
     void FlushAllPages();
     void DeletePage(int page_id);
     void PrintFrames();
+    int GetPageCount();
 };
