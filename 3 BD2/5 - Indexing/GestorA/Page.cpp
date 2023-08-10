@@ -1,6 +1,7 @@
 #include "Page.h"
 #include "GestorAlmacenamiento.h"
 #include <iostream>
+#include <algorithm>
 constexpr int PAGE_SIZE = 4096; // Tamaño constante de la página
 
 Page::Page(std::shared_ptr<GestorAlmacenamiento> gestor, int page_id)
@@ -17,8 +18,14 @@ int Page::get_page_id()
 
 void Page::read_page()
 {
-    std::cout << buffer.data() << std::endl; // Imprime el contenido del búfer de la página en la salida estándar
-    subprocess_count++;                      // Incrementa el contador de subprocesos
+    // std::cout << buffer.data() << std::endl; // Imprime el contenido del búfer de la página en la salida estándar
+    subprocess_count++; // Incrementa el contador de subprocesos
+}
+
+std::string Page::read_record(int record_address)
+{
+    std::vector<char> slice(buffer.begin() + record_address % PAGE_SIZE, buffer.begin() + record_address % PAGE_SIZE + 115); // Retorna el registro almacenado en la dirección especificada
+    return std::string(slice.begin(), slice.end());
 }
 
 void Page::write_page()

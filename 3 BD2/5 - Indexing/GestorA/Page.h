@@ -1,5 +1,6 @@
 #include <memory>
 #include <vector>
+#include <string>
 
 class GestorAlmacenamiento;
 
@@ -17,6 +18,7 @@ public:
     Page(std::shared_ptr<GestorAlmacenamiento> gestor, int page_id);
     int get_page_id();
     void read_page();
+    std::string read_record(int record_id);
     void write_page();
     ~Page();
 };
