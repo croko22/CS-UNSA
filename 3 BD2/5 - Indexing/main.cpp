@@ -79,6 +79,8 @@ int main()
     tree.print();
     //? Search for a record
     tree.getValue(800);
+    tree.getValue(777);
     tree.getValue(100);
+    tree.getValue(1000);
     return 0;
 }
