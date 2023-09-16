@@ -4,6 +4,7 @@
 #include <random>
 using namespace std;
 
+//? Generar puntos
 vector<float> gRandomPoint(int d, float min, float max)
 {
     vector<float> point;
@@ -23,6 +24,7 @@ vector<vector<float>> gRandomPoints(int n, int d, float min, float max)
     return points;
 }
 
+//? Calcular distancias
 float euclideanDistance(vector<float> p1, vector<float> p2)
 {
     float sum = 0;
@@ -31,6 +33,7 @@ float euclideanDistance(vector<float> p1, vector<float> p2)
     return sqrt(sum);
 }
 
+//*TODO: Arrgelar esta funcion
 vector<float> distances(vector<vector<float>> points)
 {
     vector<float> distances;
@@ -38,7 +41,9 @@ vector<float> distances(vector<vector<float>> points)
     fstream file("distances.csv", ios::out);
     for (int i = 0; i < points.size(); i++)
     {
+        //* Fijar el punto
         auto point = points[i];
+        //* Calcular la distancia entre el punto fijo y todos los demas
         for (int j = 0; j < points.size(); j++)
         {
             auto p = points[j];
@@ -53,7 +58,7 @@ vector<float> distances(vector<vector<float>> points)
 
 int main(int argc, char const *argv[])
 {
-    auto points = gRandomPoints(10, 3, 0, 1);
+    auto points = gRandomPoints(10, 1, 0, 1);
     // auto points = gRandomPoints(100, 3, 0, 1);
     for (auto point : points)
     {
