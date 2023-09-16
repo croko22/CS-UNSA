@@ -1,7 +1,7 @@
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <random>
+#include <fstream>
 using namespace std;
 
 //? Generar puntos
@@ -33,42 +33,60 @@ float euclideanDistance(vector<float> p1, vector<float> p2)
     return sqrt(sum);
 }
 
-//*TODO: Arrgelar esta funcion
-vector<float> distances(vector<vector<float>> points)
+vector<float> calculateDistances(vector<vector<float>> points)
 {
     vector<float> distances;
-    //* Escribir las distancias entre todos los puntos en un csv
-    fstream file("distances.csv", ios::out);
+
     for (int i = 0; i < points.size(); i++)
     {
-        //* Fijar el punto
         auto point = points[i];
-        //* Calcular la distancia entre el punto fijo y todos los demas
         for (int j = 0; j < points.size(); j++)
         {
             auto p = points[j];
             float dist = euclideanDistance(point, p);
-            distances.push_back(dist);
-            file << dist << ",";
+            if (i != j)
+                distances.push_back(dist);
         }
-        file << endl;
     }
+
     return distances;
+}
+
+void writeDistancesToFile(vector<float> distances, string filename)
+{
+    fstream file(filename, ios::out);
+    for (int i = 0; i < distances.size(); i++)
+        i == distances.size() - 1 ? file << distances[i] : file << distances[i] << ",";
+}
+
+void testByDimension(int d, string filename)
+{
+    auto points = gRandomPoints(100, d, 0, 1);
+    auto dists = calculateDistances(points);
+    writeDistancesToFile(dists, filename);
 }
 
 int main(int argc, char const *argv[])
 {
-    auto points = gRandomPoints(10, 1, 0, 1);
-    // auto points = gRandomPoints(100, 3, 0, 1);
-    for (auto point : points)
-    {
-        for (auto p : point)
-            cout << p << " ";
-        cout << endl;
-    }
+    // testByDimension(10, "d10_distances.csv");
+    // testByDimension(50, "d50_distances.csv");
+    // testByDimension(100, "d100_distances.csv");
 
-    auto dists = distances(points);
-    for (auto dist : dists)
-        cout << dist << " ";
+    testByDimension(5000, "d5000_distances.csv");
+
+    // auto points = gRandomPoints(100, 3, 0, 1);
+    // //?Helpers
+    // for (auto point : points)
+    // {
+    //     for (auto p : point)
+    //         cout << p << " ";
+    //     cout << endl;
+    // }
+
+    // auto dists = calculateDistances(points);
+    // writeDistancesToFile(dists, "distances.csv");
+    // for (auto dist : dists)
+    //     cout << dist << " ";
+
     return 0;
 }
