@@ -62,31 +62,24 @@ void writeDistancesToFile(vector<float> distances, string filename)
 void testByDimension(int d, string filename)
 {
     auto points = gRandomPoints(100, d, 0, 1);
-    auto dists = calculateDistances(points);
-    writeDistancesToFile(dists, filename);
-}
-
-int main(int argc, char const *argv[])
-{
-    // testByDimension(10, "d10_distances.csv");
-    // testByDimension(50, "d50_distances.csv");
-    // testByDimension(100, "d100_distances.csv");
-
-    testByDimension(5000, "d5000_distances.csv");
-
-    // auto points = gRandomPoints(100, 3, 0, 1);
-    // //?Helpers
     // for (auto point : points)
     // {
     //     for (auto p : point)
     //         cout << p << " ";
     //     cout << endl;
     // }
+    auto dists = calculateDistances(points);
+    // for (auto dist : dists) cout << dist << " ";
+    writeDistancesToFile(dists, filename);
+}
 
-    // auto dists = calculateDistances(points);
-    // writeDistancesToFile(dists, "distances.csv");
-    // for (auto dist : dists)
-    //     cout << dist << " ";
-
+int main(int argc, char const *argv[])
+{
+    testByDimension(10, "d10_distances.csv");
+    testByDimension(50, "d50_distances.csv");
+    testByDimension(100, "d100_distances.csv");
+    testByDimension(1000, "d1000_distances.csv");
+    testByDimension(2000, "d2000_distances.csv");
+    testByDimension(5000, "d5000_distances.csv");
     return 0;
 }
