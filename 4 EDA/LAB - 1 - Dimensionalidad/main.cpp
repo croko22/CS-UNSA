@@ -75,11 +75,12 @@ void testByDimension(int d, string filename)
 
 int main(int argc, char const *argv[])
 {
-    testByDimension(10, "d10_distances.csv");
-    testByDimension(50, "d50_distances.csv");
-    testByDimension(100, "d100_distances.csv");
-    testByDimension(1000, "d1000_distances.csv");
-    testByDimension(2000, "d2000_distances.csv");
-    testByDimension(5000, "d5000_distances.csv");
+    // testByDimension(10, "d10_distances.csv");
+    // testByDimension(50, "d50_distances.csv");
+    // testByDimension(100, "d100_distances.csv");
+    // testByDimension(500, "d500_distances.csv");
+    // testByDimension(1000, "d1000_distances.csv");
+    // testByDimension(2000, "d2000_distances.csv");
+    // testByDimension(5000, "d5000_distances.csv");
     return 0;
 }
