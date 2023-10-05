@@ -1,61 +1,38 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <fcntl.h>
-#include "defines.h"
-
-char *orden;
-char *argumentos[MAXARG];
-int narg;
-int es_background;
-
-void construye_orden(char *argv[]);
-
-int main(int argc, char *argv[])
+int main()
 {
     int i;
-    int status;
-
-    if (argc != 2)
+    int fd1, fd2;
+    const char string1[10] = "*********";
+    const char string2[10] = "---------";
+    pid_t rf;
+    fd1 = creat("ficheroA", 0666);
+    fd2 = creat("ficheroB", 0666);
+    rf = fork();
+    switch (rf)
     {
-        fprintf(stderr, "Uso: %s fich_a_visualizar\n", argv[0]);
-        exit(1);
+    case -1:
+        printf("\nNo he podido crear el proceso hijo");
+        break;
+    case 0:
+        for (i = 0; i < 10; i++)
+        {
+            write(fd1, string2, sizeof(string2));
+            write(fd2, string2, sizeof(string2));
+            usleep(1); /* Abandonamos voluntariamente el procesador */
+        }
+        break;
+    default:
+        for (i = 0; i < 10; i++)
+        {
+            write(fd1, string1, sizeof(string1));
+            write(fd2, string1, sizeof(string1));
+            usleep(1); /* Abandonamos voluntariamente el procesador */
+        }
     }
-
-    construye_orden(argv);
-
-    if (fork() == 0)
-    { /* CODIGO DEL HIJO */
-        execvp(orden, argumentos);
-        fprintf(stderr, "%s no encontrado o no ejecutable\n", orden);
-        exit(1);
-    }
-
-    /* CODIGO DEL PADRE*/
-    wait(&status);
-    exit(1);
-}
-
-void construye_orden(char *argv[])
-{
-    int i, j;
-
-    narg = 1;
-    es_background = FALSE;
-    for (j = 0; j < MAXARG; j++)
-        argumentos[j] = NULL;
-
-    /* Atencion: La asignación de la cadena "cat" a 'orden' que está declarado como
-    un 'char *' se trata como estática, es decir, en tiempo de compilación, el compilador
-    reserva espacio de memoria suficiente para almacenar la cadena "cat" (4 bytes). */
-
-    orden = "cat";
-
-    /* Atención: Por contra, el array de cadenas 'argumentos' no se trata como una
-    variable estática, y por eso, es responsabilidad del programador reservar memoria
-    para las posiciones que se vayan a utilizar (en el ejemplo, 0 y 1) */
-    argumentos[0] = (char *)malloc(strlen(orden) + 1);
-    strcpy(argumentos[0], orden);
-    argumentos[1] = (char *)malloc(strlen(argv[1]) + 1);
-    strcpy(argumentos[1], argv[1]);
+    printf("\nFinal de ejecucion de %d \n", getpid());
+    exit(0);
 }
