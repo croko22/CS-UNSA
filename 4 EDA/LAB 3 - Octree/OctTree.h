@@ -24,6 +24,13 @@ public:
 
 OctTree::OctTree(/* args */) {}
 
-OctTree::~OctTree()
+OctTree::~OctTree() {}
+
+void OctTree::insert(const Point *p)
 {
+}
+
+bool OctTree::exist(const Point *p)
+{
+    return false;
 }

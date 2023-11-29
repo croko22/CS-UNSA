@@ -9,7 +9,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkRenderer.h>
 
-int main(int, char*[])
+int main(int, char *[])
 {
 
   vtkNew<vtkNamedColors> colors;
@@ -26,6 +26,7 @@ int main(int, char*[])
   // Create a cube.
   vtkNew<vtkCubeSource> cube;
   cube->Update();
+  cube->SetBounds(0, 1, 0, 1, 0, 1);
 
   // Mapper.
   vtkNew<vtkPolyDataMapper> cubeMapper;
@@ -35,9 +36,17 @@ int main(int, char*[])
   vtkNew<vtkActor> cubeActor;
   cubeActor->SetMapper(cubeMapper);
   cubeActor->GetProperty()->SetColor(colors->GetColor3d("Banana").GetData());
+  cubeActor->SetPosition(10, 10, 10);
+
+  // Actor 2
+  vtkNew<vtkActor> cubeActor2;
+  cubeActor2->SetMapper(cubeMapper);
+  cubeActor2->GetProperty()->SetColor(colors->GetColor3d("Tomato").GetData());
+  cubeActor2->SetPosition(1, 1, 10);
 
   // Assign actor to the renderer.
   ren->AddActor(cubeActor);
+  ren->AddActor(cubeActor2);
 
   ren->ResetCamera();
   ren->GetActiveCamera()->Azimuth(30);
