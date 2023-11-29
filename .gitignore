@@ -33,6 +33,7 @@
 *.txt
 
 # Specific files
+build
 dtree
 galmacenamiento
 3 BD2/4 - Registros de Longitud Fija y Variable/titanicFL.bin
