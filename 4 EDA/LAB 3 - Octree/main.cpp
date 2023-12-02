@@ -1,4 +1,4 @@
-#include "OctTree.h"
+#include "octree.h"
 #include <iostream>
 #include <fstream>
 
@@ -6,25 +6,32 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
-    OctTree *tree = new OctTree();
+    Octree *octree = new Octree();
     // Point *p = new Point(1, 2, 3);
-    // tree->insert(p);
+    // octree->insert(p);
 
     fstream file;
-    file.open("points1.csv", ios::in);
+    file.open("assets/points1.csv", ios::in);
     if (file.is_open())
     {
         string line;
         while (getline(file, line))
         {
-            int x, y, z;
-            cout << line << endl; //* debug
-            sscanf(line.c_str(), "%d,%d,%d", &x, &y, &z);
-            Point *p = new Point(x, y, z);
-            tree->insert(p);
+            double x, y, z;
+            sscanf(line.c_str(), "%lf,%lf,%lf", &x, &y, &z);
+            Point p(x, y, z);
+            octree->insert(p);
         }
     }
+    octree->insert(Point(1, 2, 3));
 
     cout << "Insertados" << endl;
+    cout << "Existen?" << endl;
+    cout << octree->exist(Point(1, 2, 3)) << endl;
+    cout << octree->exist(Point(1, 2, 3)) << endl;
+    cout << octree->exist(Point(1, 2, 3)) << endl;
+    cout << octree->exist(Point(-122, 177, -71)) << endl;
+    cout << octree->exist(Point(266, 246, 19)) << endl;
+    cout << octree->exist(Point(266, 246, 11)) << endl;
     return 0;
 }
