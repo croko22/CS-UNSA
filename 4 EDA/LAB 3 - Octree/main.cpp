@@ -1,4 +1,4 @@
-#include "octree.h"
+#include "src/octree.h"
 #include <iostream>
 #include <fstream>
 
