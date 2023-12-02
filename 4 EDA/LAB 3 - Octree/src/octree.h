@@ -7,6 +7,7 @@ struct Point
 class Octree
 {
 private:
+public:
     struct Node
     {
         Point point;
@@ -20,8 +21,6 @@ private:
     };
 
     Node *root;
-
-public:
     Octree() : root(nullptr) {}
     void insert(const Point &p);
     bool exist(const Point &p);

@@ -1,99 +1,66 @@
-#include <iostream>
+#include <vtkActor.h>
+#include <vtkCamera.h>
+#include <vtkCubeSource.h>
+#include <vtkNamedColors.h>
+#include <vtkNew.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkRenderer.h>
 
-struct Point
+int main(int, char *[])
 {
-	double x, y, z;
-	Point(double x, double y, double z) : x(x), y(y), z(z) {}
-};
 
-class Octree
-{
-private:
-	struct Node
-	{
-		Point point;
-		Node *children[8];
+    vtkNew<vtkNamedColors> colors;
 
-		Node(const Point &p) : point(p)
-		{
-			for (int i = 0; i < 8; ++i)
-				children[i] = nullptr;
-		}
-	};
+    // Create a rendering window and renderer.
+    vtkNew<vtkRenderer> ren;
+    vtkNew<vtkRenderWindow> renWin;
+    renWin->SetWindowName("Cube");
+    renWin->AddRenderer(ren);
+    // Create a renderwindow interactor.
+    vtkNew<vtkRenderWindowInteractor> iren;
+    iren->SetRenderWindow(renWin);
 
-	Node *root;
+    // Create a cube.
+    vtkNew<vtkCubeSource> cube;
+    cube->Update();
+    cube->SetBounds(0, 1, 0, 1, 0, 1);
 
-public:
-	Octree() : root(nullptr) {}
-	void insert(const Point &p);
-	bool exist(const Point &p);
-	~Octree();
+    // Mapper.
+    vtkNew<vtkPolyDataMapper> cubeMapper;
+    cubeMapper->SetInputData(cube->GetOutput());
 
-private:
-	void insertRecursively(const Point &p, Node *&node);
-	bool existRecursively(const Point &p, Node *node);
-};
+    // Actor.
+    vtkNew<vtkActor> cubeActor;
+    cubeActor->SetMapper(cubeMapper);
+    cubeActor->GetProperty()->SetColor(colors->GetColor3d("Banana").GetData());
+    cubeActor->SetPosition(10, 10, 10);
 
-void Octree::insert(const Point &p)
-{
-	insertRecursively(p, root);
-}
+    // Actor 2
+    vtkNew<vtkActor> cubeActor2;
+    cubeActor2->SetMapper(cubeMapper);
+    cubeActor2->GetProperty()->SetColor(colors->GetColor3d("Tomato").GetData());
+    cubeActor2->SetPosition(1, 1, 10);
 
-bool Octree::exist(const Point &p)
-{
-	return existRecursively(p, root);
-}
+    // Assign actor to the renderer.
+    ren->AddActor(cubeActor);
+    ren->AddActor(cubeActor2);
 
-void Octree::insertRecursively(const Point &p, Node *&node)
-{
-	if (!node)
-	{
-		node = new Node(p);
-		return;
-	}
+    ren->ResetCamera();
+    ren->GetActiveCamera()->Azimuth(30);
+    ren->GetActiveCamera()->Elevation(30);
+    ren->ResetCameraClippingRange();
+    ren->SetBackground(colors->GetColor3d("Silver").GetData());
 
-	// Determine the octant where the point should go
-	int octant = (p.x < node->point.x ? 0 : 1) + (p.y < node->point.y ? 0 : 2) + (p.z < node->point.z ? 0 : 4);
+    renWin->SetSize(300, 300);
+    renWin->SetWindowName("Cube1");
 
-	if (!node->children[octant])
-		node->children[octant] = new Node(p);
-	else
-		insertRecursively(p, node->children[octant]);
-}
+    // Enable user interface interaction.
+    iren->Initialize();
+    renWin->Render();
+    iren->Start();
 
-bool Octree::existRecursively(const Point &p, Node *node)
-{
-	if (!node)
-		return false;
-
-	if (node->point.x == p.x && node->point.y == p.y && node->point.z == p.z)
-		return true;
-
-	int octant = (p.x < node->point.x ? 0 : 1) + (p.y < node->point.y ? 0 : 2) + (p.z < node->point.z ? 0 : 4);
-
-	return existRecursively(p, node->children[octant]);
-}
-
-Octree::~Octree()
-{
-	// You might want to implement a proper destructor to free the allocated memory
-	// This depends on your memory management requirements
-}
-
-int main()
-{
-	Octree octree;
-
-	Point p1(2, 3, 4);
-	Point p2(5, 6, 7);
-	Point p3(8, 9, 10);
-
-	octree.insert(p1);
-	octree.insert(p2);
-
-	std::cout << std::boolalpha << "Point p1 exists: " << octree.exist(p1) << std::endl;
-	std::cout << std::boolalpha << "Point p2 exists: " << octree.exist(p2) << std::endl;
-	std::cout << std::boolalpha << "Point p3 exists: " << octree.exist(p3) << std::endl;
-
-	return 0;
+    return EXIT_SUCCESS;
 }
