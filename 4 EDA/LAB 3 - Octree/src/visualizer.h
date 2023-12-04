@@ -14,20 +14,22 @@
 class Visualizer
 {
 public:
-    Visualizer();
+    Visualizer(int figure, float size);
     void visualizeNode(Octree::Node *node);
     void visualizeOctree(Octree *octree);
     void render();
     ~Visualizer();
 
 private:
+    int figure;
+    float size;
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkRenderWindow> renderWindow;
     vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor;
     vtkSmartPointer<vtkNamedColors> colors;
 };
 
-Visualizer::Visualizer()
+Visualizer::Visualizer(int figure, float size) : figure(figure), size(size)
 {
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
@@ -42,18 +44,20 @@ void Visualizer::visualizeNode(Octree::Node *node)
     if (!node)
         return;
 
+    float cubeSize = figure == 1 ? 10 * size : size;
+
     vtkSmartPointer<vtkCubeSource> cubeSource = vtkSmartPointer<vtkCubeSource>::New();
     cubeSource->SetBounds(
-        static_cast<double>(node->point.x), static_cast<double>(node->point.x) + 20.0,
-        static_cast<double>(node->point.y), static_cast<double>(node->point.y) + 20.0,
-        static_cast<double>(node->point.z), static_cast<double>(node->point.z) + 20.0);
+        static_cast<double>(node->point.x), static_cast<double>(node->point.x) + cubeSize,
+        static_cast<double>(node->point.y), static_cast<double>(node->point.y) + cubeSize,
+        static_cast<double>(node->point.z), static_cast<double>(node->point.z) + cubeSize);
 
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(cubeSource->GetOutputPort());
 
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(colors->GetColor3d("Orange").GetData());
+    actor->GetProperty()->SetColor(colors->GetColor3d("Green").GetData());
 
     renderer->AddActor(actor);
 
