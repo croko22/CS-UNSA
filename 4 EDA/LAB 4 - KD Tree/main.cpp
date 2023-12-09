@@ -29,7 +29,7 @@ vector<Point> knn(vector<Point> &data, Point &p, int k)
 
 int main(int argc, char const *argv[])
 {
-    ifstream fin("data/1000.csv");
+    ifstream fin("data/20000.csv");
     string line;
     vector<Point> data;
     while (getline(fin, line))
@@ -41,7 +41,10 @@ int main(int argc, char const *argv[])
     }
     fin.close();
 
+    auto start = chrono::steady_clock::now();
     vector<Point> ans = knn(data, data[0], 5);
+    auto end = chrono::steady_clock::now();
+    cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
     for (auto &i : ans)
         cout << i.x << " " << i.y << " " << i.z << endl;
 
