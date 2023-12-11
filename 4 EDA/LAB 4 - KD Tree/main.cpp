@@ -1,11 +1,6 @@
 #include <bits/stdc++.h>
+#include "kdtree.h"
 using namespace std;
-
-struct Point
-{
-    double x, y, z;
-    Point(double x, double y, double z) : x(x), y(y), z(z) {}
-};
 
 //* KNN Brute Force
 vector<Point> knn(vector<Point> &data, Point &p, int k)
@@ -42,11 +37,32 @@ int main(int argc, char const *argv[])
     fin.close();
 
     auto start = chrono::steady_clock::now();
-    vector<Point> ans = knn(data, data[0], 5);
+    vector<Point> ans = knn(data, data[777], 5);
     auto end = chrono::steady_clock::now();
-    cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
     for (auto &i : ans)
         cout << i.x << " " << i.y << " " << i.z << endl;
+    cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
+
+    //*KD TREE
+    KDTree kdTree;
+    Point p1(1.0, 2.0, 3.0);
+    Point p2(4.0, 5.0, 6.0);
+    Point p3(7.0, 8.0, 9.0);
+
+    kdTree.insert(p1);
+    kdTree.insert(p2);
+    kdTree.insert(p3);
+
+    Point queryPoint(0.0, 0.0, 0.0);
+    int k = 2;
+
+    std::vector<Point> nearestNeighbors = kdTree.kNN(queryPoint, k);
+
+    // Display the k nearest neighbors
+    for (const auto &neighbor : nearestNeighbors)
+    {
+        std::cout << "Point (" << neighbor.x << ", " << neighbor.y << ", " << neighbor.z << ")" << std::endl;
+    }
 
     return 0;
 }
