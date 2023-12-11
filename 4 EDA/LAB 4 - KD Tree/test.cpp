@@ -316,6 +316,7 @@ public:
     }
 };
 
+/*
 int main(int argc, char **argv)
 {
     std::vector<MyPoint> points;
@@ -330,7 +331,7 @@ int main(int argc, char **argv)
     // generate query (center of the space)
     // k-nearest neigbors search
     const MyPoint query(100, 100);
-    const int k = 2;
+    const int k = 10;
     const std::vector<int> knnIndices = kdtree.knnSearch(query, k);
     for (auto i : knnIndices)
     {
@@ -339,3 +340,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+*/

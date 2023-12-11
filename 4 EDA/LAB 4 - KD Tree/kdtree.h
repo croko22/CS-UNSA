@@ -1,250 +1,295 @@
 #pragma once
-#include <iostream>
+#include <vector>
+#include <numeric>
 #include <algorithm>
-#include <queue>
+#include <exception>
+#include <functional>
 #include <cmath>
+#include <iostream>
 
-struct Point
+class Point : public std::array<double, 3>
 {
-    double x, y, z;
-    Point(double x, double y, double z) : x(x), y(y), z(z) {}
-};
-
-class KDTree
-{
-private:
-    struct Node
-    {
-        Point point;
-        Node *left;
-        Node *right;
-        Node(Point p) : point(p), left(nullptr), right(nullptr) {}
-    };
-
-    Node *root;
-    void insertRecursive(Node *&node, Point &p, int depth);
-    void kNNRecursive(Node *node, Point &queryPoint, int depth, int k, std::priority_queue<std::pair<double, Point>> &nearestNeighbors);
-
 public:
-    KDTree() : root(nullptr)
-    {
-    }
-    ~KDTree();
+    static const int DIM = 3;
 
-    void insert(Point &p);
-    std::vector<Point> kNN(Point &queryPoint, int k);
+    Point() {}
+    Point(double x, double y, double z)
+    {
+        (*this)[0] = x;
+        (*this)[1] = y;
+        (*this)[2] = z;
+    }
 };
 
-KDTree::~KDTree()
+namespace kdt
 {
-    // You can implement tree destruction logic here if needed.
-}
+    /** @brief k-d tree class.
+     */
+    template <class PointT>
+    class KDTree
+    {
+    public:
+        /** @brief The constructors.
+         */
+        KDTree() : root_(nullptr){};
+        KDTree(const std::vector<PointT> &points) : root_(nullptr) { build(points); }
 
-void KDTree::insert(Point &p)
+        /** @brief The destructor.
+         */
+        ~KDTree() { clear(); }
+
+        /** @brief Re-builds k-d tree.
+         */
+        void build(const std::vector<PointT> &points)
+        {
+            clear();
+
+            points_ = points;
+
+            std::vector<int> indices(points.size());
+            std::iota(std::begin(indices), std::end(indices), 0);
+
+            root_ = buildRecursive(indices.data(), (int)points.size(), 0);
+        }
+
+        /** @brief Clears k-d tree.
+         */
+        void clear()
+        {
+            clearRecursive(root_);
+            root_ = nullptr;
+            points_.clear();
+        }
+
+        /** @brief Validates k-d tree.
+         */
+        bool validate() const
+        {
+            try
+            {
+                validateRecursive(root_, 0);
+            }
+            catch (const Exception &)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /** @brief Searches the nearest neighbor.
+         */
+        int nnSearch(const PointT &query, double *minDist = nullptr) const
+        {
+            int guess;
+            double _minDist = std::numeric_limits<double>::max();
+
+            nnSearchRecursive(query, root_, &guess, &_minDist);
+
+            if (minDist)
+                *minDist = _minDist;
+
+            return guess;
+        }
+
+        /** @brief Searches k-nearest neighbors.
+         */
+        std::vector<int> knnSearch(const PointT &query, int k) const
+        {
+            KnnQueue queue(k);
+            knnSearchRecursive(query, root_, queue, k);
+
+            std::vector<int> indices(queue.size());
+            for (size_t i = 0; i < queue.size(); i++)
+                indices[i] = queue[i].second;
+
+            return indices;
+        }
+
+    private:
+        struct Node
+        {
+            int idx;       //!< index to the original point
+            Node *next[2]; //!< pointers to the child nodes
+            int axis;      //!< dimension's axis
+
+            Node() : idx(-1), axis(-1) { next[0] = next[1] = nullptr; }
+        };
+
+        class Exception : public std::exception
+        {
+            using std::exception::exception;
+        };
+
+        template <class T, class Compare = std::less<T>>
+        class BoundedPriorityQueue
+        {
+        public:
+            BoundedPriorityQueue() = delete;
+            BoundedPriorityQueue(size_t bound) : bound_(bound) { elements_.reserve(bound + 1); };
+
+            void push(const T &val)
+            {
+                auto it = std::find_if(std::begin(elements_), std::end(elements_),
+                                       [&](const T &element)
+                                       { return Compare()(val, element); });
+                elements_.insert(it, val);
+
+                if (elements_.size() > bound_)
+                    elements_.resize(bound_);
+            }
+
+            const T &back() const { return elements_.back(); };
+            const T &operator[](size_t index) const { return elements_[index]; }
+            size_t size() const { return elements_.size(); }
+
+        private:
+            size_t bound_;
+            std::vector<T> elements_;
+        };
+
+        /** @brief Priority queue of <distance, index> pair.
+         */
+        using KnnQueue = BoundedPriorityQueue<std::pair<double, int>>;
+
+        /** @brief Builds k-d tree recursively.
+         */
+        Node *buildRecursive(int *indices, int npoints, int depth)
+        {
+            if (npoints <= 0)
+                return nullptr;
+
+            const int axis = depth % PointT::DIM;
+            const int mid = (npoints - 1) / 2;
+
+            std::nth_element(indices, indices + mid, indices + npoints, [&](int lhs, int rhs)
+                             { return points_[lhs][axis] < points_[rhs][axis]; });
+
+            Node *node = new Node();
+            node->idx = indices[mid];
+            node->axis = axis;
+
+            node->next[0] = buildRecursive(indices, mid, depth + 1);
+            node->next[1] = buildRecursive(indices + mid + 1, npoints - mid - 1, depth + 1);
+
+            return node;
+        }
+
+        /** @brief Clears k-d tree recursively.
+         */
+        void clearRecursive(Node *node)
+        {
+            if (node == nullptr)
+                return;
+
+            if (node->next[0])
+                clearRecursive(node->next[0]);
+
+            if (node->next[1])
+                clearRecursive(node->next[1]);
+
+            delete node;
+        }
+
+        /** @brief Validates k-d tree recursively.
+         */
+        void validateRecursive(const Node *node, int depth) const
+        {
+            if (node == nullptr)
+                return;
+
+            const int axis = node->axis;
+            const Node *node0 = node->next[0];
+            const Node *node1 = node->next[1];
+
+            if (node0 && node1)
+            {
+                if (points_[node->idx][axis] < points_[node0->idx][axis])
+                    throw Exception();
+
+                if (points_[node->idx][axis] > points_[node1->idx][axis])
+                    throw Exception();
+            }
+
+            if (node0)
+                validateRecursive(node0, depth + 1);
+
+            if (node1)
+                validateRecursive(node1, depth + 1);
+        }
+
+        static double distance(const PointT &p, const PointT &q)
+        {
+            double dist = 0;
+            for (size_t i = 0; i < PointT::DIM; i++)
+                dist += (p[i] - q[i]) * (p[i] - q[i]);
+            return sqrt(dist);
+        }
+
+        /** @brief Searches the nearest neighbor recursively.
+         */
+        void nnSearchRecursive(const PointT &query, const Node *node, int *guess, double *minDist) const
+        {
+            if (node == nullptr)
+                return;
+
+            const PointT &train = points_[node->idx];
+
+            const double dist = distance(query, train);
+            if (dist < *minDist)
+            {
+                *minDist = dist;
+                *guess = node->idx;
+            }
+
+            const int axis = node->axis;
+            const int dir = query[axis] < train[axis] ? 0 : 1;
+            nnSearchRecursive(query, node->next[dir], guess, minDist);
+
+            const double diff = fabs(query[axis] - train[axis]);
+            if (diff < *minDist)
+                nnSearchRecursive(query, node->next[!dir], guess, minDist);
+        }
+
+        /** @brief Searches k-nearest neighbors recursively.
+         */
+        void knnSearchRecursive(const PointT &query, const Node *node, KnnQueue &queue, int k) const
+        {
+            if (node == nullptr)
+                return;
+
+            const PointT &train = points_[node->idx];
+
+            const double dist = distance(query, train);
+            queue.push(std::make_pair(dist, node->idx));
+
+            const int axis = node->axis;
+            const int dir = query[axis] < train[axis] ? 0 : 1;
+            knnSearchRecursive(query, node->next[dir], queue, k);
+
+            const double diff = fabs(query[axis] - train[axis]);
+            if ((int)queue.size() < k || diff < queue.back().first)
+                knnSearchRecursive(query, node->next[!dir], queue, k);
+        }
+
+        Node *root_;                 //!< root node
+        std::vector<PointT> points_; //!< points
+    };
+} // kdt
+
+// inherits std::array in order to use operator[]
+class MyPoint : public std::array<double, 2>
 {
-    // Helper function for recursive insertion
-    insertRecursive(root, p, 0);
-}
+public:
+    // dimension of space (or "k" of k-d tree)
+    // KDTree class accesses this member
+    static const int DIM = 2;
 
-void KDTree::insertRecursive(Node *&node, Point &p, int depth)
-{
-    // If the current node is null, create a new node
-    if (node == nullptr)
+    // the constructors
+    MyPoint() {}
+    MyPoint(double x, double y)
     {
-        node = new Node(p);
-        return;
+        (*this)[0] = x;
+        (*this)[1] = y;
     }
-
-    // Determine the current dimension to split on (x, y, or z)
-    int currentDimension = depth % 3; // Assuming 3D points
-
-    // Compare the point based on the current dimension
-    if (currentDimension == 0)
-    {
-        if (p.x < node->point.x)
-            insertRecursive(node->left, p, depth + 1);
-        else
-            insertRecursive(node->right, p, depth + 1);
-    }
-    else if (currentDimension == 1)
-    {
-        if (p.y < node->point.y)
-            insertRecursive(node->left, p, depth + 1);
-        else
-            insertRecursive(node->right, p, depth + 1);
-    }
-    else
-    {
-        if (p.z < node->point.z)
-            insertRecursive(node->left, p, depth + 1);
-        else
-            insertRecursive(node->right, p, depth + 1);
-    }
-}
-
-std::vector<Point> KDTree::kNN(Point &queryPoint, int k)
-{
-    std::priority_queue<std::pair<double, Point>> nearestNeighbors;
-
-    kNNRecursive(root, queryPoint, 0, k, nearestNeighbors);
-
-    // Extract the k nearest neighbors from the priority queue
-    std::vector<Point> result;
-    while (!nearestNeighbors.empty())
-    {
-        result.push_back(nearestNeighbors.top().second);
-        nearestNeighbors.pop();
-    }
-
-    // The result is currently in reverse order, so reverse it
-    std::reverse(result.begin(), result.end());
-
-    return result;
-}
-
-void KDTree::kNNRecursive(Node *node, Point &queryPoint, int depth, int k, std::priority_queue<std::pair<double, Point>> &nearestNeighbors)
-{
-    if (node == nullptr)
-        return;
-
-    // Calculate the distance between the query point and the current node's point
-    double distance = sqrt(pow(queryPoint.x - node->point.x, 2) + pow(queryPoint.y - node->point.y, 2) + pow(queryPoint.z - node->point.z, 2));
-
-    // Insert the current point into the priority queue
-    nearestNeighbors.push({distance, node->point});
-
-    // Check if the priority queue size exceeds k, remove the farthest point
-    if (nearestNeighbors.size() > k)
-    {
-        nearestNeighbors.pop();
-    }
-
-    // Determine the current dimension to split on (x, y, or z)
-    int currentDimension = depth % 3; // Assuming 3D points
-
-    // Recursively search the side of the splitting plane that contains the query point
-    if (currentDimension == 0)
-    {
-        if (queryPoint.x < node->point.x)
-            kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        else
-            kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-    }
-    else if (currentDimension == 1)
-    {
-        if (queryPoint.y < node->point.y)
-            kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        else
-            kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-    }
-    else
-    {
-        if (queryPoint.z < node->point.z)
-            kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        else
-            kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-    }
-
-    // Check if the other side of the splitting plane needs to be explored
-    double nodePointValue = (currentDimension == 0) ? node->point.x : (currentDimension == 1) ? node->point.y
-                                                                                              : node->point.z;
-    double queryPointValue = (currentDimension == 0) ? queryPoint.x : (currentDimension == 1) ? queryPoint.y
-                                                                                              : queryPoint.z;
-
-    if (nearestNeighbors.size() < k || fabs(nodePointValue - queryPointValue) < nearestNeighbors.top().first)
-    {
-        if (currentDimension == 0)
-        {
-            if (queryPoint.x < node->point.x)
-                kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-            else
-                kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        }
-        else if (currentDimension == 1)
-        {
-            if (queryPoint.y < node->point.y)
-                kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-            else
-                kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        }
-        else
-        {
-            if (queryPoint.z < node->point.z)
-                kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-            else
-                kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        }
-    }
-}
-
-/*
-void KDTree::kNNRecursive(Node *node, Point &queryPoint, int depth, int k, std::priority_queue<std::pair<double, Point>> &nearestNeighbors)
-{
-    if (node == nullptr)
-        return;
-
-    // Calculate the distance between the query point and the current node's point
-    double distance = sqrt(pow(queryPoint.x - node->point.x, 2) + pow(queryPoint.y - node->point.y, 2) + pow(queryPoint.z - node->point.z, 2));
-
-    // Insert the current point into the priority queue
-    nearestNeighbors.push({distance, node->point});
-
-    // Check if the priority queue size exceeds k, remove the farthest point
-    if (nearestNeighbors.size() > k)
-    {
-        nearestNeighbors.pop();
-    }
-
-    // Determine the current dimension to split on (x, y, or z)
-    int currentDimension = depth % 3; // Assuming 3D points
-
-    // Recursively search the side of the splitting plane that contains the query point
-    if (currentDimension == 0)
-    {
-        if (queryPoint.x < node->point.x)
-            kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        else
-            kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-    }
-    else if (currentDimension == 1)
-    {
-        if (queryPoint.y < node->point.y)
-            kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        else
-            kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-    }
-    else
-    {
-        if (queryPoint.z < node->point.z)
-            kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        else
-            kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-    }
-
-    // Check if the other side of the splitting plane needs to be explored
-    if (nearestNeighbors.size() < k || fabs(node->point[currentDimension] - queryPoint[currentDimension]) < nearestNeighbors.top().first)
-    {
-        if (currentDimension == 0)
-        {
-            if (queryPoint.x < node->point.x)
-                kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-            else
-                kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        }
-        else if (currentDimension == 1)
-        {
-            if (queryPoint.y < node->point.y)
-                kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-            else
-                kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        }
-        else
-        {
-            if (queryPoint.z < node->point.z)
-                kNNRecursive(node->right, queryPoint, depth + 1, k, nearestNeighbors);
-            else
-                kNNRecursive(node->left, queryPoint, depth + 1, k, nearestNeighbors);
-        }
-    }
-}
-*/
+};

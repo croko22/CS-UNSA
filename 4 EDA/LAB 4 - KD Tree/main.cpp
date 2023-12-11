@@ -2,19 +2,26 @@
 #include "kdtree.h"
 using namespace std;
 
-//* KNN Brute Force
-vector<Point> knn(vector<Point> &data, Point &p, int k)
+struct KNNPoint
 {
-    vector<pair<double, Point>> dist;
+    double x, y, z;
+    KNNPoint() {}
+    KNNPoint(double x, double y, double z) : x(x), y(y), z(z) {}
+};
+
+//* KNN Brute Force
+vector<KNNPoint> knn(vector<KNNPoint> &data, KNNPoint &p, int k)
+{
+    vector<pair<double, KNNPoint>> dist;
     for (auto &i : data)
     {
         //* Euclidean Distance
         double d = sqrt(pow(i.x - p.x, 2) + pow(i.y - p.y, 2) + pow(i.z - p.z, 2));
         dist.push_back({d, i});
     }
-    sort(dist.begin(), dist.end(), [](pair<double, Point> &a, pair<double, Point> &b)
+    sort(dist.begin(), dist.end(), [](pair<double, KNNPoint> &a, pair<double, KNNPoint> &b)
          { return a.first < b.first; });
-    vector<Point> ans;
+    vector<KNNPoint> ans;
     for (int i = 0; i < k; i++)
         ans.push_back(dist[i].second);
     return ans;
@@ -26,42 +33,42 @@ int main(int argc, char const *argv[])
 {
     ifstream fin("data/20000.csv");
     string line;
-    vector<Point> data;
+    vector<KNNPoint> data;
     while (getline(fin, line))
     {
         double x, y, z;
         sscanf(line.c_str(), "%lf,%lf,%lf", &x, &y, &z);
         // cout << x << " " << y << " " << z << endl;
-        data.push_back(Point(x, y, z));
+        data.push_back(KNNPoint(x, y, z));
     }
     fin.close();
 
     auto start = chrono::steady_clock::now();
-    vector<Point> ans = knn(data, data[777], 5);
+    vector<KNNPoint> ans = knn(data, data[777], 5);
     auto end = chrono::steady_clock::now();
     for (auto &i : ans)
         cout << i.x << " " << i.y << " " << i.z << endl;
     cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
 
     //*KD TREE
-    KDTree kdTree;
-    Point p1(1.0, 2.0, 3.0);
-    Point p2(4.0, 5.0, 6.0);
-    Point p3(7.0, 8.0, 9.0);
+    std::vector<Point> points;
+    points.push_back({1, 1, 1});
+    points.push_back({1, 10, 1});
+    points.push_back({100, 1, 101});
+    points.push_back({1, 111, 111});
+    points.push_back({1, 11, 99});
 
-    kdTree.insert(p1);
-    kdTree.insert(p2);
-    kdTree.insert(p3);
+    kdt::KDTree<Point> kdtree(points);
 
-    Point queryPoint(0.0, 0.0, 0.0);
-    int k = 2;
-
-    std::vector<Point> nearestNeighbors = kdTree.kNN(queryPoint, k);
-
-    // Display the k nearest neighbors
-    for (const auto &neighbor : nearestNeighbors)
+    // generate query (center of the space)
+    // k-nearest neigbors search
+    cout << "KD TREE" << endl;
+    const Point query(100, 111, 100);
+    const int k = 10;
+    const std::vector<int> knnIndices = kdtree.knnSearch(query, k);
+    for (auto i : knnIndices)
     {
-        std::cout << "Point (" << neighbor.x << ", " << neighbor.y << ", " << neighbor.z << ")" << std::endl;
+        std::cout << points[i][0] << points[i][1] << points[i][2] << std::endl;
     }
 
     return 0;
