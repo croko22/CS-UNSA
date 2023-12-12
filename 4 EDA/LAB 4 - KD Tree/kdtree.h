@@ -1,10 +1,4 @@
 #pragma once
-#include <vector>
-#include <numeric>
-#include <algorithm>
-#include <functional>
-#include <cmath>
-#include <iostream>
 
 class Point : public std::array<double, 3>
 {
@@ -47,6 +41,18 @@ public:
         points_.clear();
     }
 
+    void insert(const PointT &point)
+    {
+        if (root_ == nullptr)
+        {
+            root_ = new Node();
+            root_->idx = static_cast<int>(points_.size());
+            points_.push_back(point);
+        }
+        else
+            insertRecursive(point, root_, 0);
+    }
+
     std::vector<int> knnSearch(const PointT &query, int k) const
     {
         KnnQueue queue(k);
@@ -62,9 +68,9 @@ public:
 private:
     struct Node
     {
-        int idx;       //!< index to the original point
-        Node *next[2]; //!< pointers to the child nodes
-        int axis;      //!< dimension's axis
+        int idx;       //? index to the original point
+        Node *next[2]; //? pointers to the child nodes
+        int axis;      //? dimension's axis
 
         Node() : idx(-1), axis(-1) { next[0] = next[1] = nullptr; }
     };
@@ -133,6 +139,38 @@ private:
         delete node;
     }
 
+    void insertRecursive(const PointT &point, Node *node, int depth)
+    {
+        const int axis = depth % PointT::DIM;
+
+        if (point[axis] < points_[node->idx][axis])
+        {
+            if (node->next[0] == nullptr)
+            {
+                node->next[0] = new Node();
+                node->next[0]->idx = static_cast<int>(points_.size());
+                points_.push_back(point);
+            }
+            else
+            {
+                insertRecursive(point, node->next[0], depth + 1);
+            }
+        }
+        else
+        {
+            if (node->next[1] == nullptr)
+            {
+                node->next[1] = new Node();
+                node->next[1]->idx = static_cast<int>(points_.size());
+                points_.push_back(point);
+            }
+            else
+            {
+                insertRecursive(point, node->next[1], depth + 1);
+            }
+        }
+    }
+
     static double distance(const PointT &p, const PointT &q)
     {
         double dist = 0;
@@ -160,6 +198,6 @@ private:
             knnSearchRecursive(query, node->next[!dir], queue, k);
     }
 
-    Node *root_;                 //!< root node
-    std::vector<PointT> points_; //!< points
+    Node *root_;                 //? root node
+    std::vector<PointT> points_; //? points
 };
