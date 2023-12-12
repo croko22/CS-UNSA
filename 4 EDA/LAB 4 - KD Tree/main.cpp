@@ -59,7 +59,7 @@ std::tuple<Point, int, double> testKDTree(std::vector<Point> &data, int k)
 
 int main(int argc, char const *argv[])
 {
-    auto data = loadPoints("data/10000.csv");
+    auto data = loadPoints("data/1000.csv");
     //* KNN
     const int k = 5;
     Point query(116, 6174, 1466);
@@ -84,11 +84,9 @@ int main(int argc, char const *argv[])
 
     //* MEASURE TIME
     int k_max = 100;
-    int csv_size[] = {1000, 10000, 20000};
     vector<tuple<Point, int, double>> knn_results;
     vector<tuple<Point, int, double>> kdtree_results;
 
-    // auto data = loadPoints("data/20000.csv");
     for (int i = 1; i <= k_max; i++)
     {
         auto knn_result = testKNN(data, i);
@@ -96,15 +94,17 @@ int main(int argc, char const *argv[])
         knn_results.push_back(knn_result);
         kdtree_results.push_back(kdtree_result);
     }
-    ofstream fout("results/knn.csv");
-    ofstream fout1("results/kdtree.csv");
+    // ofstream fout("results/knn.csv");
+    // ofstream fout1("results/kdtree.csv");
+    ofstream fout("results/knn_1000.csv");
+    ofstream fout1("results/kdtree_1000.csv");
 
-    fout << "k, time" << endl;
-    fout1 << "k, time" << endl;
+    fout << "k,time" << endl;
+    fout1 << "k,time" << endl;
     for (int i = 0; i < k_max; i++)
     {
-        fout << get<1>(knn_results[i]) << ", " << get<2>(knn_results[i]) << endl;
-        fout1 << get<1>(kdtree_results[i]) << ", " << get<2>(kdtree_results[i]) << endl;
+        fout << get<1>(knn_results[i]) << "," << get<2>(knn_results[i]) << endl;
+        fout1 << get<1>(kdtree_results[i]) << "," << get<2>(kdtree_results[i]) << endl;
     }
 
     fout.close();
