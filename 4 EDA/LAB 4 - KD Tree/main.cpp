@@ -59,12 +59,18 @@ std::tuple<Point, int, double> testKDTree(std::vector<Point> &data, int k)
 
 int main(int argc, char const *argv[])
 {
-    auto data = loadPoints("data/1000.csv");
+    //* Load data
+    string file;
+    cout << "Enter file name (1000, 10000, 20000):";
+    cin >> file;
+    auto data = loadPoints("data/" + file + ".csv");
     //* KNN
     const int k = 5;
     Point query(116, 6174, 1466);
+    cout << "QUERY POINT: " << query[0] << " " << query[1] << " " << query[2] << endl;
 
     //* KNN Brute Force
+    cout << "KNN Brute Force" << endl;
     auto start = chrono::steady_clock::now();
     vector<Point> ans = knn(data, query, k);
     auto end = chrono::steady_clock::now();
@@ -94,8 +100,6 @@ int main(int argc, char const *argv[])
         knn_results.push_back(knn_result);
         kdtree_results.push_back(kdtree_result);
     }
-    // ofstream fout("results/knn.csv");
-    // ofstream fout1("results/kdtree.csv");
     ofstream fout("results/knn_1000.csv");
     ofstream fout1("results/kdtree_1000.csv");
 
