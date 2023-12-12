@@ -1,75 +1,114 @@
 #include <bits/stdc++.h>
 #include "kdtree.h"
+#include "knn.h"
 using namespace std;
 
-struct KNNPoint
+//* Load data
+vector<Point> loadPoints(string filename)
 {
-    double x, y, z;
-    KNNPoint() {}
-    KNNPoint(double x, double y, double z) : x(x), y(y), z(z) {}
-};
-
-//* KNN Brute Force
-vector<KNNPoint> knn(vector<KNNPoint> &data, KNNPoint &p, int k)
-{
-    vector<pair<double, KNNPoint>> dist;
-    for (auto &i : data)
-    {
-        //* Euclidean Distance
-        double d = sqrt(pow(i.x - p.x, 2) + pow(i.y - p.y, 2) + pow(i.z - p.z, 2));
-        dist.push_back({d, i});
-    }
-    sort(dist.begin(), dist.end(), [](pair<double, KNNPoint> &a, pair<double, KNNPoint> &b)
-         { return a.first < b.first; });
-    vector<KNNPoint> ans;
-    for (int i = 0; i < k; i++)
-        ans.push_back(dist[i].second);
-    return ans;
-}
-
-//* KNN KD Tree
-
-int main(int argc, char const *argv[])
-{
-    ifstream fin("data/20000.csv");
+    ifstream fin(filename);
     string line;
-    vector<KNNPoint> data;
+    vector<Point> data;
+    if (!fin.is_open())
+    {
+        cout << "Error opening file" << endl;
+        exit(1);
+    }
     while (getline(fin, line))
     {
         double x, y, z;
         sscanf(line.c_str(), "%lf,%lf,%lf", &x, &y, &z);
-        // cout << x << " " << y << " " << z << endl;
-        data.push_back(KNNPoint(x, y, z));
+        data.push_back(Point(x, y, z));
     }
     fin.close();
+    return data;
+}
 
+std::tuple<Point, int, double> testKNN(std::vector<Point> &data, int k)
+{
+    // Generate a random query point within the data range
+    Point query = data[rand() % data.size()];
+
+    // Perform KNN search
     auto start = chrono::steady_clock::now();
-    vector<KNNPoint> ans = knn(data, data[777], 5);
+    auto neighbors = knn(data, query, k);
+    auto end = chrono::steady_clock::now();
+
+    // Calculate execution time
+    double time_ms = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+
+    return std::make_tuple(query, neighbors.size(), time_ms);
+}
+
+std::tuple<Point, int, double> testKDTree(std::vector<Point> &data, int k)
+{
+    // Generate a random query point within the data range
+    Point query = data[rand() % data.size()];
+
+    // Perform KNN search
+    KDTree<Point> kdtree(data);
+    auto start = chrono::steady_clock::now();
+    const std::vector<int> knnIndices = kdtree.knnSearch(query, k);
+    auto end = chrono::steady_clock::now();
+
+    // Calculate execution time
+    double time_ms = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+
+    return std::make_tuple(query, knnIndices.size(), time_ms);
+}
+
+int main(int argc, char const *argv[])
+{
+    auto data = loadPoints("data/10000.csv");
+    //* KNN
+    const int k = 5;
+    Point query(116, 6174, 1466);
+
+    //* KNN Brute Force
+    auto start = chrono::steady_clock::now();
+    vector<Point> ans = knn(data, query, k);
     auto end = chrono::steady_clock::now();
     for (auto &i : ans)
-        cout << i.x << " " << i.y << " " << i.z << endl;
+        cout << i[0] << " " << i[1] << " " << i[2] << endl;
     cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
 
     //*KD TREE
-    std::vector<Point> points;
-    points.push_back({1, 1, 1});
-    points.push_back({1, 10, 1});
-    points.push_back({100, 1, 101});
-    points.push_back({1, 111, 111});
-    points.push_back({1, 11, 99});
-
-    kdt::KDTree<Point> kdtree(points);
-
-    // generate query (center of the space)
-    // k-nearest neigbors search
     cout << "KD TREE" << endl;
-    const Point query(100, 111, 100);
-    const int k = 10;
+    KDTree<Point> kdtree(data);
+    auto start1 = chrono::steady_clock::now();
     const std::vector<int> knnIndices = kdtree.knnSearch(query, k);
+    auto end1 = chrono::steady_clock::now();
     for (auto i : knnIndices)
+        cout << data[i][0] << ", " << data[i][1] << ", " << data[i][2] << std::endl;
+    cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end1 - start1).count() << "ms" << endl;
+
+    //* MEASURE TIME
+    int k_max = 100;
+    int csv_size[] = {1000, 10000, 20000};
+    vector<tuple<Point, int, double>> knn_results;
+    vector<tuple<Point, int, double>> kdtree_results;
+
+    // auto data = loadPoints("data/20000.csv");
+    for (int i = 1; i <= k_max; i++)
     {
-        std::cout << points[i][0] << points[i][1] << points[i][2] << std::endl;
+        auto knn_result = testKNN(data, i);
+        auto kdtree_result = testKDTree(data, i);
+        knn_results.push_back(knn_result);
+        kdtree_results.push_back(kdtree_result);
     }
+    ofstream fout("results/knn.csv");
+    ofstream fout1("results/kdtree.csv");
+
+    fout << "k, time" << endl;
+    fout1 << "k, time" << endl;
+    for (int i = 0; i < k_max; i++)
+    {
+        fout << get<1>(knn_results[i]) << ", " << get<2>(knn_results[i]) << endl;
+        fout1 << get<1>(kdtree_results[i]) << ", " << get<2>(kdtree_results[i]) << endl;
+    }
+
+    fout.close();
+    fout1.close();
 
     return 0;
 }
