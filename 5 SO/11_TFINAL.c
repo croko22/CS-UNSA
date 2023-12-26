@@ -1,61 +1,45 @@
 #include <stdio.h>
+#include <dirent.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-// Declare the function prototype for get_processes
-int get_processes(int *pids, int size);
 
 int main()
 {
-    // Obtiene la lista de procesos.
-    int pids[1024];
-    int n = get_processes(pids, sizeof(pids));
+    DIR *dirp;
+    struct dirent *dp;
 
-    // Imprime la lista de procesos.
-    for (int i = 0; i < n; i++)
+    dirp = opendir("/proc");
+    if (dirp == NULL)
     {
-        printf("PID: %d\n", pids[i]);
+        perror("Failed to open directory \"/proc\"");
+        return 1;
     }
+
+    while ((dp = readdir(dirp)) != NULL)
+    {
+        if (dp->d_type == DT_DIR && atoi(dp->d_name) > 0)
+        {
+            char stat_path[256];
+            sprintf(stat_path, "/proc/%s/stat", dp->d_name);
+
+            FILE *fp = fopen(stat_path, "r");
+            if (fp == NULL)
+            {
+                perror("Failed to open stat file");
+                continue;
+            }
+
+            int pid;
+            char comm[256];
+            char state;
+            fscanf(fp, "%d %s %c", &pid, comm, &state);
+
+            printf("PID: %d, Command: %s, State: %c\n", pid, comm, state);
+
+            fclose(fp);
+        }
+    }
+
+    closedir(dirp);
 
     return 0;
-}
-
-int get_processes(int *pids, int size)
-{
-    // Abre el archivo /proc/stat.
-    FILE *fp = fopen("/proc/stat", "r");
-    if (!fp)
-    {
-        return -1;
-    }
-
-    // Lee la primera línea del archivo.
-    char line[1024];
-    fgets(line, sizeof(line), fp);
-
-    // Extrae los PIDs de los procesos en ejecución.
-    for (int i = 0; i < size; i++)
-    {
-        // Busca el siguiente PID.
-        char *p = strstr(line, " ");
-        if (!p)
-        {
-            break;
-        }
-
-        // Extrae el PID.
-        pids[i] = atoi(p + 1);
-
-        // Avanza al siguiente PID.
-        line = p + 1;
-    }
-
-    // Cierra el archivo.
-    fclose(fp);
-
-    int i = 0;
-    // Rest of your code...
-    return i;
 }
