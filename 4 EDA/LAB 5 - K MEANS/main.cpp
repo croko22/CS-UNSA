@@ -24,33 +24,6 @@ vector<Point> loadPoints(string filename)
     return data;
 }
 
-// std::tuple<Point, int, double> testKNN(std::vector<Point> &data, int k)
-// {
-//     Point query = data[rand() % data.size()];
-
-//     auto start = chrono::steady_clock::now();
-//     // auto neighbors = knn(data, query, k);
-//     auto end = chrono::steady_clock::now();
-
-//     double time_ms = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-
-//     // return std::make_tuple(query, neighbors.size(), time_ms);
-// }
-
-std::tuple<Point, int, double> testKDTree(std::vector<Point> &data, int k)
-{
-    Point query = data[rand() % data.size()];
-
-    KDTree<Point> kdtree(data);
-    auto start = chrono::steady_clock::now();
-    const std::vector<int> knnIndices = kdtree.knnSearch(query, k);
-    auto end = chrono::steady_clock::now();
-
-    double time_ms = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-
-    return std::make_tuple(query, knnIndices.size(), time_ms);
-}
-
 int main(int argc, char const *argv[])
 {
     //* Load data
@@ -58,76 +31,95 @@ int main(int argc, char const *argv[])
     // for (auto &i : data)
     //     cout << i[0] << " " << i[1] << endl;
 
-    // const int k = 5;
-    // cout << "KMEANS" << endl;
-    // auto start0 = chrono::steady_clock::now();
-    // auto results = kmeans(data, k);
-    // auto end0 = chrono::steady_clock::now();
-    // for (auto &i : results.first)
-    //     cout << i[0] << " " << i[1] << endl;
-    // cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end0 - start0).count() << "ms" << endl;
-
-    //*KD TREE
-    // cout << "KD TREE" << endl;
-    // // KDTree<Point> kdtree(data);
-    // auto start1 = chrono::steady_clock::now();
-    // auto kmeans = kdkmeans(data, k);
-    // auto end1 = chrono::steady_clock::now();
-    // cout << "Centroids: " << endl;
-    // for (auto i : kmeans.first)
-    //     cout << i[0] << " " << i[1] << endl;
-    // cout << "Clusters: " << endl;
-    // for (auto i : kmeans.second)
-    // {
-    //     for (auto j : i)
-    //         cout << j[0] << " " << j[1] << endl;
-    //     cout << endl;
-    // }
-    // cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end1 - start1).count() << "ms" << endl;
-
-    //* MEASURE TIME
-    // int k_max = 1000;
-    // vector<tuple<Point, int, double>> knn_results;
-    // vector<tuple<Point, int, double>> kdtree_results;
-    // for (int i = 1; i <= k_max; i++)
-    // {
-    //     auto knn_result = testKNN(data, i);
-    //     auto kdtree_result = testKDTree(data, i);
-    //     knn_results.push_back(knn_result);
-    //     kdtree_results.push_back(kdtree_result);
-    // }
-
-    //* WEA
-    std::vector<int> k_values = {5, 15, 25, 50, 75};
-    std::vector<int> n_values = {1000, 1150, 1300, 1450, 1600, 1750, 1900, 2050, 2200, 2400};
-
-    for (int k : k_values)
+    //*KMEANS
+    const int k = 18;
+    auto results = kmeans(data, k);
+    fstream fout("data/kmeans/centroids.csv", ios::out | ios::app);
+    fout << "x,y" << std::endl;
+    for (auto i : results.first)
+        fout << i[0] << "," << i[1] << std::endl;
+    fout.close();
+    for (int i = 0; i < k; ++i)
     {
-        fstream fout("data/" + to_string(k) + ".csv", ios::out | ios::app);
-        for (int n : n_values)
-        {
-            // Get the first n points of the dataset
-            std::vector<Point> data_subset(data.begin(), data.begin() + n);
-
-            // Measure the execution time of the standard k-means
-            auto start1 = std::chrono::high_resolution_clock::now();
-            auto knn_result = kmeans(data_subset, k);
-            auto end1 = std::chrono::high_resolution_clock::now();
-            auto time1 = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count();
-
-            // Measure the execution time of the KDTree-based k-means
-            auto start2 = std::chrono::high_resolution_clock::now();
-            auto kdtree_result = kdkmeans(data_subset, k);
-            auto end2 = std::chrono::high_resolution_clock::now();
-            auto time2 = std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count();
-
-            // Print the results
-            std::cout << "k = " << k << ", n = " << n << std::endl;
-            std::cout << "Standard k-means time: " << time1 << "ms" << std::endl;
-            std::cout << "KDTree-based k-means time: " << time2 << "ms" << std::endl;
-            fout << k << "," << time1 << "," << time2 << std::endl;
-        }
+        fstream fout("data/kmeans/cluster_" + to_string(i) + ".csv", ios::out | ios::app);
+        fout << "x,y" << std::endl;
+        for (auto j : results.second[i])
+            fout << j[0] << "," << j[1] << std::endl;
+        fout.close();
     }
+
+    //* KDTREE
+    // auto results = kdkmeans(data, k);
+    // fstream fout("data/kdtree/centroids.csv", ios::out | ios::app);
+    // fout << "x,y" << std::endl;
+    // for (auto i : results.first)
+    //     fout << i[0] << "," << i[1] << std::endl;
+    // fout.close();
+    // for (int i = 0; i < k; ++i)
+    // {
+    //     fstream fout("data/kdtree/cluster_" + to_string(i) + ".csv", ios::out | ios::app);
+    //     fout << "x,y" << std::endl;
+    //     for (auto j : results.second[i])
+    //         fout << j[0] << "," << j[1] << std::endl;
+    //     fout.close();
+    // }
+
+    //* TESTS WITH K
+    // std::vector<int> k_values = {5, 15, 25, 50, 75, 100, 125, 150, 200};
+    // std::vector<int> n_values = {1000, 1450, 1900, 2400};
+
+    // for (int k : k_values)
+    // {
+    //     fstream fout("data/k/" + to_string(k) + ".csv", ios::out | ios::app);
+    //     fout << "n,kmeans_time,kdkmeans_time" << std::endl;
+    //     for (int n : n_values)
+    //     {
+    //         // Get the first n points of the dataset
+    //         std::vector<Point> data_subset(data.begin(), data.begin() + n);
+
+    //         // Measure the execution time of the standard k-means
+    //         auto start1 = std::chrono::high_resolution_clock::now();
+    //         auto knn_result = kmeans(data_subset, k);
+    //         auto end1 = std::chrono::high_resolution_clock::now();
+    //         auto time1 = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count();
+
+    //         // Measure the execution time of the KDTree-based k-means
+    //         auto start2 = std::chrono::high_resolution_clock::now();
+    //         auto kdtree_result = kdkmeans(data_subset, k);
+    //         auto end2 = std::chrono::high_resolution_clock::now();
+    //         auto time2 = std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count();
+
+    //         fout << n << "," << time1 << "," << time2 << std::endl;
+    //     }
+    // }
+
+    //* TESTS WITH N
+    // std::vector<int> k_values = {5, 15, 25, 50, 75};
+    // std::vector<int> n_values = {1000, 1150, 1300, 1450, 1600, 1750, 1900, 2050, 2200, 2400};
+
+    // for (int n : n_values)
+    // {
+    //     fstream fout("data/n/" + to_string(n) + ".csv", ios::out | ios::app);
+    //     fout << "n,kmeans_time,kdkmeans_time" << std::endl;
+    //     for (int k : k_values)
+    //     {
+    //         // Get the first n points of the dataset
+    //         std::vector<Point> data_subset(data.begin(), data.begin() + n);
+
+    //         // Measure the execution time of the standard k-means
+    //         auto start1 = std::chrono::high_resolution_clock::now();
+    //         auto knn_result = kmeans(data_subset, k);
+    //         auto end1 = std::chrono::high_resolution_clock::now();
+    //         auto time1 = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count();
+
+    //         // Measure the execution time of the KDTree-based k-means
+    //         auto start2 = std::chrono::high_resolution_clock::now();
+    //         auto kdtree_result = kdkmeans(data_subset, k);
+    //         auto end2 = std::chrono::high_resolution_clock::now();
+    //         auto time2 = std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count();
+    //         fout << k << "," << time1 << "," << time2 << std::endl;
+    //     }
+    // }
 
     return 0;
 }
