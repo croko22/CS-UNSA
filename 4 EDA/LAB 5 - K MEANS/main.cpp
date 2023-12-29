@@ -31,22 +31,22 @@ int main(int argc, char const *argv[])
     // for (auto &i : data)
     //     cout << i[0] << " " << i[1] << endl;
 
-    //*KMEANS
     const int k = 18;
-    auto results = kmeans(data, k);
-    fstream fout("data/kmeans/centroids.csv", ios::out | ios::app);
-    fout << "x,y" << std::endl;
-    for (auto i : results.first)
-        fout << i[0] << "," << i[1] << std::endl;
-    fout.close();
-    for (int i = 0; i < k; ++i)
-    {
-        fstream fout("data/kmeans/cluster_" + to_string(i) + ".csv", ios::out | ios::app);
-        fout << "x,y" << std::endl;
-        for (auto j : results.second[i])
-            fout << j[0] << "," << j[1] << std::endl;
-        fout.close();
-    }
+    //*KMEANS
+    // auto results = kmeans(data, k);
+    // fstream fout("data/kmeans/centroids.csv", ios::out | ios::app);
+    // fout << "x,y" << std::endl;
+    // for (auto i : results.first)
+    //     fout << i[0] << "," << i[1] << std::endl;
+    // fout.close();
+    // for (int i = 0; i < k; ++i)
+    // {
+    //     fstream fout("data/kmeans/cluster_" + to_string(i) + ".csv", ios::out | ios::app);
+    //     fout << "x,y" << std::endl;
+    //     for (auto j : results.second[i])
+    //         fout << j[0] << "," << j[1] << std::endl;
+    //     fout.close();
+    // }
 
     //* KDTREE
     // auto results = kdkmeans(data, k);
@@ -54,6 +54,11 @@ int main(int argc, char const *argv[])
     // fout << "x,y" << std::endl;
     // for (auto i : results.first)
     //     fout << i[0] << "," << i[1] << std::endl;
+    // cout << "Clusters: " << endl;
+    // for (int i = 0; i < k; ++i)
+    // {
+    //     cout << "Cluster " << i << ": " << results.second[i].size() << endl;
+    // }
     // fout.close();
     // for (int i = 0; i < k; ++i)
     // {
@@ -63,6 +68,30 @@ int main(int argc, char const *argv[])
     //         fout << j[0] << "," << j[1] << std::endl;
     //     fout.close();
     // }
+
+    int num_iterations = 10; // Number of iterations
+
+    for (int iteration = 0; iteration < num_iterations; ++iteration)
+    {
+        auto results = kdkmeans(data, k);
+
+        // Save centroids
+        std::fstream centroids_out("data/kdtree10/centroids_" + std::to_string(iteration) + ".csv", std::ios::out);
+        centroids_out << "x,y" << std::endl;
+        for (auto i : results.first)
+            centroids_out << i[0] << "," << i[1] << std::endl;
+        centroids_out.close();
+
+        // Save clusters
+        for (int i = 0; i < k; ++i)
+        {
+            std::fstream cluster_out("data/kdtree10/cluster_" + std::to_string(iteration) + "_" + std::to_string(i) + ".csv", std::ios::out);
+            cluster_out << "x,y" << std::endl;
+            for (auto j : results.second[i])
+                cluster_out << j[0] << "," << j[1] << std::endl;
+            cluster_out.close();
+        }
+    }
 
     //* TESTS WITH K
     // std::vector<int> k_values = {5, 15, 25, 50, 75, 100, 125, 150, 200};
