@@ -71,6 +71,30 @@ int main(int argc, char const *argv[])
 
     int num_iterations = 10; // Number of iterations
 
+    //*KMEANS
+    for (int iteration = 0; iteration < num_iterations; ++iteration)
+    {
+        auto results = kmeans(data, k);
+
+        // Save centroids
+        std::fstream centroids_out("data/kmeans10/centroids_" + std::to_string(iteration) + ".csv", std::ios::out);
+        centroids_out << "x,y" << std::endl;
+        for (auto i : results.first)
+            centroids_out << i[0] << "," << i[1] << std::endl;
+        centroids_out.close();
+
+        // Save clusters
+        for (int i = 0; i < k; ++i)
+        {
+            std::fstream cluster_out("data/kmeans10/cluster_" + std::to_string(iteration) + "_" + std::to_string(i) + ".csv", std::ios::out);
+            cluster_out << "x,y" << std::endl;
+            for (auto j : results.second[i])
+                cluster_out << j[0] << "," << j[1] << std::endl;
+            cluster_out.close();
+        }
+    }
+
+    // * KDTREE
     for (int iteration = 0; iteration < num_iterations; ++iteration)
     {
         auto results = kdkmeans(data, k);
