@@ -150,10 +150,10 @@ std::pair<std::vector<Point>, std::vector<std::vector<Point>>> kdkmeans(const st
         }
 
         // Limpiar clusters
-        for (auto &cluster : clusters)
-        {
-            cluster.clear();
-        }
+        // for (auto &cluster : clusters)
+        // {
+        //     cluster.clear();
+        // }
     }
 
     return {centroids, clusters};
