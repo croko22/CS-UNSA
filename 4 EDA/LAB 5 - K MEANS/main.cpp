@@ -58,12 +58,12 @@ int main(int argc, char const *argv[])
     // for (auto &i : data)
     //     cout << i[0] << " " << i[1] << endl;
 
-    const int k = 5;
+    const int k = 18;
     cout << "KMEANS" << endl;
     auto start0 = chrono::steady_clock::now();
     auto results = kmeans(data, k);
     auto end0 = chrono::steady_clock::now();
-    for (auto &i : results)
+    for (auto &i : results.first)
         cout << i[0] << " " << i[1] << endl;
     cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end0 - start0).count() << "ms" << endl;
 
@@ -71,10 +71,18 @@ int main(int argc, char const *argv[])
     cout << "KD TREE" << endl;
     KDTree<Point> kdtree(data);
     auto start1 = chrono::steady_clock::now();
-    const std::vector<Point> kmeans = kdkmeans(data, k);
+    auto kmeans = kdkmeans(data, k);
     auto end1 = chrono::steady_clock::now();
-    for (auto i : kmeans)
+    cout << "Centroids: " << endl;
+    for (auto i : kmeans.first)
         cout << i[0] << " " << i[1] << endl;
+    // cout << "Clusters: " << endl;
+    // for (auto i : kmeans.second)
+    // {
+    //     for (auto j : i)
+    //         cout << j[0] << " " << j[1] << endl;
+    //     cout << endl;
+    // }
     cout << "Time: " << chrono::duration_cast<chrono::milliseconds>(end1 - start1).count() << "ms" << endl;
 
     //* MEASURE TIME

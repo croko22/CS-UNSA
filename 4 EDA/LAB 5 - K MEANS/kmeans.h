@@ -8,9 +8,11 @@ double distance(const Point &a, const Point &b)
     return std::sqrt(std::pow(a[0] - b[0], 2) + std::pow(a[1] - b[1], 2));
 }
 
-std::vector<Point> kmeans(const std::vector<Point> &data, int k)
+std::pair<std::vector<Point>, std::vector<std::vector<Point>>> kmeans(const std::vector<Point> &data, int k)
 {
     std::vector<Point> centroids(k);
+    std::vector<std::vector<Point>> clusters(k);
+
     // Centroides
     for (int i = 0; i < k; ++i)
     {
@@ -19,7 +21,6 @@ std::vector<Point> kmeans(const std::vector<Point> &data, int k)
 
     while (true)
     {
-        std::vector<std::vector<Point>> clusters(k);
         for (const Point &point : data)
         {
             int closestCentroid = 0;
@@ -64,15 +65,22 @@ std::vector<Point> kmeans(const std::vector<Point> &data, int k)
             break;
         }
         centroids = newCentroids;
+
+        // Limpiar clusters
+        for (auto &cluster : clusters)
+        {
+            cluster.clear();
+        }
     }
 
-    return centroids;
+    return {centroids, clusters};
 }
 
-std::vector<Point> kdkmeans(const std::vector<Point> &data, int k)
+std::pair<std::vector<Point>, std::vector<std::vector<Point>>> kdkmeans(const std::vector<Point> &data, int k)
 {
     // 1. Choose k random points as initial centroids
     std::vector<Point> centroids(k);
+    std::vector<std::vector<Point>> clusters(k);
     for (int i = 0; i < k; ++i)
     {
         centroids[i] = data[i];
@@ -84,7 +92,6 @@ std::vector<Point> kdkmeans(const std::vector<Point> &data, int k)
         KDTree<Point> kdtree(centroids);
 
         // 3. For each point in the dataset, find the nearest centroid
-        std::vector<std::vector<Point>> clusters(k);
         for (const Point &point : data)
         {
             int idx = kdtree.knnSearch(point, 1)[0];
@@ -106,6 +113,13 @@ std::vector<Point> kdkmeans(const std::vector<Point> &data, int k)
             newCentroids[i] = centroid;
         }
 
+        // For each point in the dataset, find the nearest centroid and assign it to the corresponding cluster
+        for (const Point &point : data)
+        {
+            int idx = kdtree.knnSearch(point, 1)[0];
+            clusters[idx].push_back(point);
+        }
+
         // 5. Check if centroids have changed significantly
         double diff = 0;
         for (int i = 0; i < k; ++i)
@@ -120,7 +134,13 @@ std::vector<Point> kdkmeans(const std::vector<Point> &data, int k)
         {
             break;
         }
+
+        // Clear the clusters for the next iteration
+        for (auto &cluster : clusters)
+        {
+            cluster.clear();
+        }
     }
 
-    return centroids;
+    return {centroids, clusters};
 }
