@@ -1,76 +1,83 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <cctype>
+#include <exception>
 
 using namespace std;
 
-// Función para determinar si un caracter es un separador
-bool esSeparador(char c)
+// Function to determine if a character is a separator
+bool isSeparator(char c)
 {
     return (c == ' ' || c == '\t' || c == '\n');
 }
 
-// Función para determinar si un caracter es un símbolo especial
-bool esSimboloEspecial(char c)
+// Function to determine if a character is a special symbol
+bool isSpecialSymbol(char c)
 {
     return (c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '(' || c == ')');
 }
 
+bool isFloat(const std::string &s)
+{
+    try
+    {
+        std::stof(s);
+        return true;
+    }
+    catch (std::exception &e)
+    {
+        return false;
+    }
+}
+
 int main()
 {
-    // Abrir el archivo de código fuente
-    ifstream archivo("test.txt");
-    if (!archivo)
+    // Open the source code file
+    ifstream file("test.txt");
+    if (!file)
     {
-        cerr << "No se pudo abrir el archivo." << endl;
+        cerr << "Failed to open the file." << endl;
         return 1;
     }
 
-    // Variables para almacenar la palabra, número y símbolo actual
-    string palabra = "";
-    string numero = "";
-    char simbolo;
-
-    // Leer el archivo caracter por caracter
-    char caracter;
-    while (archivo.get(caracter))
+    string line;
+    // Read the file line by line
+    while (getline(file, line))
     {
-        // Si el caracter es un separador
-        if (esSeparador(caracter))
+        stringstream ss(line);
+        string word;
+        // Process each word in the line
+        while (ss >> word)
         {
-            // Si hay una palabra acumulada, imprimir que es una palabra
-            if (!palabra.empty())
+            // If the word is a number or a float, print it accordingly
+            if (isdigit(word[0]) || (word[0] == '-' && isdigit(word[1])))
             {
-                cout << "palabra = " << palabra << endl;
-                palabra = ""; // Limpiar la palabra actual
+                if (isFloat(word))
+                {
+                    cout << "float = " << word << endl;
+                }
+                else
+                {
+                    cout << "number = " << word << endl;
+                }
             }
-            // Si hay un número acumulado, imprimir que es un número
-            if (!numero.empty())
+            // If the word is a special symbol, print it as a symbol
+            else if (isSpecialSymbol(word[0]))
             {
-                cout << "numero = " << numero << endl;
-                numero = ""; // Limpiar el número actual
+                cout << "symbol = " << word << endl;
             }
-        }
-        // Si el caracter es un símbolo especial
-        else if (esSimboloEspecial(caracter))
-        {
-            cout << "simbolo = " << caracter << endl;
-        }
-        // Si el caracter es una letra
-        else if (isalpha(caracter))
-        {
-            palabra += caracter; // Agregar el caracter a la palabra actual
-        }
-        // Si el caracter es un dígito
-        else if (isdigit(caracter))
-        {
-            numero += caracter; // Agregar el caracter al número actual
+            // Otherwise, it's a word
+            else
+            {
+                cout << "word = " << word << endl;
+            }
         }
     }
 
-    // Cerrar el archivo
-    archivo.close();
+    // Close the file
+    file.close();
 
     return 0;
 }
