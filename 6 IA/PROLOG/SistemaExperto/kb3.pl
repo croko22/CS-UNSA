@@ -1,16 +1,15 @@
 % Base de conocimiento para el sistema de diagnóstico de animales
-% Reglas de diagnóstico y síntomas
-diagnostico('cheeta', 
+conocimiento('cheeta', 
     ['Es mamífero', 'Es carnívoro', 'Tiene color leonado', 'Tiene puntos negros']).
-diagnostico('tigre', 
+conocimiento('tigre', 
     ['Es mamífero', 'Es carnívoro', 'Tiene color leonado', 'Tiene rayas negras']).
-diagnostico('jirafa', 
+conocimiento('jirafa', 
     ['Es ungulado', 'Tiene cuello largo', 'Tiene piernas largas']).
-diagnostico('zebra', 
+conocimiento('zebra', 
     ['Es ungulado', 'Tiene rayas negras']).
-diagnostico('aveztruz', 
+conocimiento('aveztruz', 
     ['Es un pájaro', 'No vuela', 'Tiene cuello largo']).
-diagnostico('pingüino', 
+conocimiento('pingüino', 
     ['Es un pájaro', 'No vuela', 'Sabe nadar', 'Es blanco con negro']).
-diagnostico('albatros', 
+conocimiento('albatros', 
     ['Es un pájaro', 'Aparece en historias marinas', 'Vuela bien']).
