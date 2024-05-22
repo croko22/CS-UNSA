@@ -2,12 +2,17 @@
 #include <ctype.h>
 #include <string.h>
 
-#define MAYOR '>'
-#define PUNTOYCOMA ';'
-#define PARI '('
 #define ID 256
 #define NUM 257
+#define PLUS '+'
+#define MINUS '-'
+#define MULT '*'
+#define DIV '/'
+#define MAYOR '>'
+#define MENOR '<'
 #define MAYORIGUAL 258
+#define PUNTOYCOMA ';'
+#define PARI '('
 #define WHILE 259
 #define IF 260
 
@@ -39,9 +44,9 @@ void main(int n, char *pal[])
         mostrar(token);
     }
 
-    if (f != stdin) // si la entrada fue de un archivo
-        fclose(f);  // entonces cerrar el archivo.
-} // fin del main
+    if (f != stdin)
+        fclose(f);
+}
 
 int scaner()
 {
@@ -86,11 +91,26 @@ int scaner()
         return NUM;
     }
 
+    switch (c)
+    {
+    case '+':
+        return PLUS;
+    case '-':
+        return MINUS;
+    case '*':
+        return MULT;
+    case '/':
+        return DIV;
+    default:
+        return c;
+    }
+
     // regla de PUNTOYCOMA y PARI
     if ((c == ';') || (c == '('))
         return c; // regla del ";" y "("
 
-    if (c == '>') // regla de ">" o ">="
+    // regla de ">" o ">="
+    if (c == '>')
     {
         c = fgetc(f);
         if (c == '=') // return MAYORIGUAL
@@ -103,7 +123,7 @@ int scaner()
         ungetc(c, f);
         return MAYOR; // return MAYOR
     }
-} // fin de scaner
+}
 
 int espalres()
 {
@@ -125,6 +145,18 @@ void mostrar(int token)
         break;
     case NUM:
         printf("token = NUM [%s] \n", lexema);
+        break;
+    case PLUS:
+        printf("token = PLUS [%c] \n", token);
+        break;
+    case MINUS:
+        printf("token = MINUS [%c] \n", token);
+        break;
+    case MULT:
+        printf("token = MULT [%c] \n", token);
+        break;
+    case DIV:
+        printf("token = DIV [%c] \n", token);
         break;
     case MAYORIGUAL:
         printf("token = MAYORIGUAL [%s] \n", lexema);
