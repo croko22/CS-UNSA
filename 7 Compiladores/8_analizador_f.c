@@ -15,6 +15,7 @@ int tok;
 FILE *archivo;
 int lineIndex;
 char linea[1024];
+char postfixExpr[1024] = "";
 void parea(int);
 void error();
 void Resto();
@@ -108,7 +109,6 @@ void Exp()
 {
     Term();
     Resto();
-    printf("\n");
 }
 
 void Resto()
@@ -118,6 +118,7 @@ void Resto()
         parea(MAS);
         Term();
         printf("+ ");
+        strcat(postfixExpr, "+ ");
         Resto();
     }
     else if (tok == MENOS)
@@ -125,7 +126,32 @@ void Resto()
         parea(MENOS);
         Term();
         printf("- ");
+        strcat(postfixExpr, "- ");
         Resto();
+    }
+    else if (tok == MULT)
+    {
+        parea(MULT);
+        Term();
+        printf("* ");
+        strcat(postfixExpr, "* ");
+        Resto();
+    }
+    else if (tok == DIV)
+    {
+        parea(DIV);
+        Term();
+        printf("/ ");
+        strcat(postfixExpr, "/ ");
+        Resto();
+    }
+    else if (tok == ')' || tok == FIN || tok == ';')
+    {
+        return;
+    }
+    else
+    {
+        error();
     }
 }
 
@@ -134,6 +160,9 @@ void Term()
     if (tok == NUM)
     {
         printf("%s ", lexema);
+        // Lexema + espacio
+        strcat(postfixExpr, lexema);
+        strcat(postfixExpr, " ");
         parea(NUM);
     }
     else if (tok == '(')
@@ -205,7 +234,15 @@ void ListaExp()
 {
     if (tok != FIN)
     {
+
         Exp();
+        printf("\n");
+        // PRint postfix expression
+        printf("Postfix: %s\n", postfixExpr);
+        printf("Resultado: %d\n", evaluatePostfix(postfixExpr));
+        // Clear postfix expression
+        postfixExpr[0] = '\0';
+
         if (tok == ';')
         {
             parea(';');
