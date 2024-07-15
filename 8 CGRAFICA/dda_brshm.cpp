@@ -1,41 +1,75 @@
 #include <GL/glut.h>
-#include <math.h>
-#include <cstdio>
+#include <cmath>
+#include <string>
 
-// Función para trazar la línea usando DDA
-void drawLineDDA(int x1, int y1, int x2, int y2)
+void drawLineDDA(int x1, int y1, int x2, int y2, const std::string &lineType)
 {
     float dx = x2 - x1;
     float dy = y2 - y1;
-    float steps = fmax(abs(dx), abs(dy));
+    float steps = fmax(fabs(dx), fabs(dy));
     float x_inc = dx / steps;
     float y_inc = dy / steps;
     float x = x1;
     float y = y1;
 
-    glBegin(GL_POINTS);
+    glBegin(GL_LINES);
     for (int i = 0; i <= steps; i++)
     {
-        glVertex2i(round(x), round(y));
+        bool draw = false;
+        if (lineType == "solid")
+        {
+            draw = true;
+        }
+        else if (lineType == "dotted")
+        {
+            draw = (i % 4 == 0);
+        }
+        else if (lineType == "dashed")
+        {
+            draw = (i % 10 < 5);
+        }
+
+        if (draw)
+        {
+            glVertex2i(round(x), round(y));
+        }
         x += x_inc;
         y += y_inc;
     }
     glEnd();
 }
 
-// Función para trazar la línea usando el algoritmo de Bresenham
-void drawLineBresenham(int x1, int y1, int x2, int y2)
+void drawLineBresenham(int x1, int y1, int x2, int y2, const std::string &lineType)
 {
     int dx = abs(x2 - x1);
     int dy = abs(y2 - y1);
     int sx = (x1 < x2) ? 1 : -1;
     int sy = (y1 < y2) ? 1 : -1;
     int err = dx - dy;
+    int count = 0;
 
-    glBegin(GL_POINTS);
+    glBegin(GL_LINES);
     while (1)
     {
-        glVertex2i(x1, y1);
+        bool draw = false;
+        if (lineType == "solid")
+        {
+            draw = true;
+        }
+        else if (lineType == "dotted")
+        {
+            draw = (count % 4 == 0);
+        }
+        else if (lineType == "dashed")
+        {
+            draw = (count % 10 < 5);
+        }
+
+        if (draw)
+        {
+            glVertex2i(x1, y1);
+        }
+
         if (x1 == x2 && y1 == y2)
             break;
         int e2 = 2 * err;
@@ -49,81 +83,42 @@ void drawLineBresenham(int x1, int y1, int x2, int y2)
             err += dx;
             y1 += sy;
         }
+        count++;
     }
     glEnd();
 }
 
-// Función para dibujar la cuadrícula
-void drawGrid()
-{
-    glColor3f(0.8, 0.8, 0.8); // Color gris para la cuadrícula
-    glBegin(GL_LINES);
-    for (int i = 0; i <= 20; i++)
-    {
-        glVertex2i(i, 0);
-        glVertex2i(i, 20);
-        glVertex2i(0, i);
-        glVertex2i(20, i);
-    }
-    glEnd();
-
-    // Dibujar las coordenadas
-    glColor3f(0.0, 0.0, 0.0); // Color negro para las coordenadas
-    for (int i = 0; i <= 20; i++)
-    {
-        glRasterPos2i(i, -1);
-        char num[3];
-        snprintf(num, 3, "%d", i);
-        for (char *c = num; *c != '\0'; c++)
-        {
-            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, *c);
-        }
-        glRasterPos2i(-1, i);
-        snprintf(num, 3, "%d", i);
-        for (char *c = num; *c != '\0'; c++)
-        {
-            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, *c);
-        }
-    }
-}
-
-// Función de visualización
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Dibuja la cuadrícula en dos regiones
+    glColor3f(0.0, 0.0, 0.0); // Color negro para las líneas
+
+    // Dibuja líneas en el primer viewport (lado izquierdo)
     glViewport(0, 0, 250, 500);
-    drawGrid();
+    drawLineDDA(10, 20, 200, 220, "solid");
+    drawLineDDA(10, 40, 200, 240, "dotted");
+    drawLineDDA(10, 60, 200, 260, "dashed");
 
+    // Dibuja líneas en el segundo viewport (lado derecho)
     glViewport(250, 0, 250, 500);
-    drawGrid();
-
-    // Dibuja la línea usando DDA en la primera región
-    glViewport(0, 0, 250, 500);
-    glColor3f(0.0, 0.0, 1.0); // Color azul
-    drawLineDDA(2, 2, 10, 5);
-
-    // Dibuja la línea usando Bresenham en la segunda región
-    glViewport(250, 0, 250, 500);
-    glColor3f(1.0, 0.0, 0.0); // Color rojo
-    drawLineBresenham(2, 2, 10, 5);
+    drawLineBresenham(10, 20, 200, 220, "solid");
+    drawLineBresenham(10, 40, 200, 240, "dotted");
+    drawLineBresenham(10, 60, 200, 260, "dashed");
 
     glFlush();
 }
 
-// Función de inicialización
 void init()
 {
     glClearColor(1.0, 1.0, 1.0, 1.0); // Fondo blanco
-    glColor3f(0.0, 0.0, 0.0);         // Color negro para los puntos
-    glPointSize(5.0);                 // Tamaño de los puntos
+    glColor3f(0.0, 0.0, 0.0);         // Color negro para las líneas
+    glLineWidth(2.0);                 // Grosor de las líneas
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0.0, 20.0, 0.0, 20.0); // Definir el área de dibujo
+    gluOrtho2D(0.0, 250.0, 0.0, 500.0); // Definir el área de dibujo
 }
 
-// Función principal
 int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
