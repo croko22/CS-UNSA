@@ -4,29 +4,36 @@
 class Carro
 {
 public:
-    Carro(float width, float height) : width(width), height(height), translateX(0.0f), translateY(0.0f) {}
+    Carro(float width, float height, float posX, float posY) : width(width), height(height), posX(posX), posY(posY) {}
 
-    void setTranslation(float x, float y)
+    void traslacion(float x, float y)
     {
-        translateX = x;
-        translateY = y;
+        posX = x;
+        posY = y;
     }
 
-    void draw()
+    void escalar(float s)
+    {
+        escala = s;
+    }
+
+    void dibujar()
     {
         glPushMatrix();
-        glTranslatef(translateX, translateY, 0.0f);
-        drawBody();
-        drawRoof();
-        drawWheels();
+        glTranslatef(posX, posY, 0.0f);
+        glScalef(escala, escala, 1.0f);
+        dibujarCuerpo();
+        dibujarTecho();
+        dibujarRuedas();
         glPopMatrix();
     }
 
 private:
     float width, height;
-    float translateX, translateY;
+    float posX, posY;
+    float escala = 1.0f;
 
-    void drawLineDDA(float x1, float y1, float x2, float y2)
+    void dibujarLineaDDA(float x1, float y1, float x2, float y2)
     {
         float dx = x2 - x1;
         float dy = y2 - y1;
@@ -45,58 +52,58 @@ private:
         glEnd();
     }
 
-    void drawBody()
+    void dibujarCuerpo()
     {
-        glColor3f(0.0f, 0.0f, 1.0f);
+        glColor3f(1.0f, 0.0f, 1.0f);
         glBegin(GL_LINES);
-        // Bottom
+        // Parte inferior
         glVertex2f(-width / 2, -height / 2);
         glVertex2f(width / 2, -height / 2);
-        // Top
+        // Parte superior
         glVertex2f(-width / 2, height / 4);
         glVertex2f(width / 2, height / 4);
-        // Left
+        // Izquierda
         glVertex2f(-width / 2, -height / 2);
         glVertex2f(-width / 2, height / 4);
-        // Right
+        // Derecha
         glVertex2f(width / 2, -height / 2);
         glVertex2f(width / 2, height / 4);
         glEnd();
     }
 
-    void drawRoof()
+    void dibujarTecho()
     {
-        glColor3f(0.0f, 0.0f, 1.0f);
+        glColor3f(0.5f, 1.0f, 0.0f);
         glBegin(GL_LINES);
-        // Bottom left to top left
+        // Inferior izquierda a superior izquierda
         glVertex2f(-width / 4, height / 4);
         glVertex2f(-width / 8, height / 2);
-        // Bottom right to top right
+        // Inferior derecha a superior derecha
         glVertex2f(width / 4, height / 4);
         glVertex2f(width / 8, height / 2);
-        // Top left to top right
+        // Superior izquierda a superior derecha
         glVertex2f(-width / 8, height / 2);
         glVertex2f(width / 8, height / 2);
         glEnd();
     }
 
-    void drawWheels()
+    void dibujarRuedas()
     {
-        float wheelRadius = width / 8;
-        drawWheel(-width / 3, -height / 2 - wheelRadius, wheelRadius);
-        drawWheel(width / 3, -height / 2 - wheelRadius, wheelRadius);
+        float radioRueda = width / 8;
+        dibujarRueda(-width / 3, -height / 2 - radioRueda, radioRueda);
+        dibujarRueda(width / 3, -height / 2 - radioRueda, radioRueda);
     }
 
-    void drawWheel(float cx, float cy, float r)
+    void dibujarRueda(float cx, float cy, float r)
     {
         int num_segments = 100;
-        glColor3f(0.0f, 0.0f, 0.0f);
+        glColor3f(0.0f, 0.0f, 0.0f); // Negro para las ruedas
         glBegin(GL_LINE_LOOP);
         for (int i = 0; i < num_segments; i++)
         {
             float theta = 2.0f * 3.1415926f * float(i) / float(num_segments);
             float x = r * cosf(theta);
-            float y = r * sinf(theta);
+            float y = r * sinf(theta) + r;
             glVertex2f(x + cx, y + cy);
         }
         glEnd();

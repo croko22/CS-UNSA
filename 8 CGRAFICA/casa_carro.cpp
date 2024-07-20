@@ -8,8 +8,8 @@ Carro *car;
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    house->draw();
-    car->draw();
+    house->dibujar();
+    car->dibujar();
     glFlush();
 }
 
@@ -27,14 +27,14 @@ int main(int argc, char **argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(1000, 1000);
-    glutCreateWindow("House with DDA Lines");
+    glutCreateWindow("CASA CARRO");
     init();
 
-    house = new Casa(500, 400);
-    house->setTranslation(500.0f, 500.0f);
-
-    car = new Carro(600, 200);
-    car->setTranslation(250.0f, 250.0f);
+    house = new Casa(700, 350, 500, 500);
+    house->escalar(0.3);
+    car = new Carro(200, 100, 700, 300);
+    car->escalar(2);
+    car->traslacion(700, 300);
 
     glutDisplayFunc(display);
     glutMainLoop();
