@@ -63,18 +63,37 @@ void process_chunk(const string &input_file, size_t start, size_t end, const str
 void merge_partials(const vector<string> &partial_files, const string &final_output)
 {
     unordered_map<string, int> finalCounts;
-    for (const string &file_name : partial_files)
+    vector<unordered_map<string, int>> local_counts(omp_get_max_threads());
+
+#pragma omp parallel for
+    for (size_t i = 0; i < partial_files.size(); ++i)
     {
-        ifstream file(file_name);
+        ifstream file(partial_files[i]);
+        if (!file)
+            continue;
+
         string word;
         int count;
+        int tid = omp_get_thread_num();
         while (file >> word >> count)
+        {
+            local_counts[tid][word] += count;
+        }
+    }
+
+    for (const auto &local_map : local_counts)
+    {
+        for (const auto &[word, count] : local_map)
+        {
             finalCounts[word] += count;
+        }
     }
 
     ofstream out(final_output);
-    for (const auto &[w, count] : finalCounts)
-        out << w << ' ' << count << '\n';
+    for (const auto &[word, count] : finalCounts)
+    {
+        out << word << ' ' << count << '\n';
+    }
 }
 
 int main(int argc, char *argv[])
