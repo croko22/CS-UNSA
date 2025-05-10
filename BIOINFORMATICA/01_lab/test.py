@@ -1,5 +1,5 @@
 import unittest
-from identify_sequence import identify_sequence, translate_dna_to_amino_acids
+from identify_sequence import identify_sequence
 
 class TestIdentifySequence(unittest.TestCase):
     def test_dna_sequences(self):
