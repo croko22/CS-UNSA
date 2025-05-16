@@ -12,11 +12,8 @@ class TestBioinformaticsUtils(unittest.TestCase):
         S1 = "TACGCGC"
         S2 = "TCCGA"
         result = needleman_wunsch(S1, S2, match=1, mismatch=-1, gap=-2)
-        # Verifica el score final esperado
         self.assertEqual(result['final_score'], -1)
-        # Verifica la cantidad de alineamientos generados
         self.assertEqual(result['num_alignments'], 1)
-        # Verifica los alineamientos generados
         expected_alignments = [
             ("TACGCGC", "T-C-CGA"),
         ]
