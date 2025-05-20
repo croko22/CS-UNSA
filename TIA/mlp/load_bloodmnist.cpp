@@ -8,46 +8,46 @@ template <typename T>
 std::vector<T> load_npy(const std::string &filename, std::vector<unsigned long> &shape_out)
 {
     npy::npy_data data = npy::read_npy<T>(filename);
-    std::cout << "shape: ";
-    for (const auto &dim : data.shape)
-    {
-        std::cout << dim << " ";
-        shape_out.push_back(dim);
-    }
-    std::cout << std::endl;
     shape_out = data.shape;
     return data.data;
 }
 
-int main()
+struct BloodMnistData
 {
-    std::string train_images_path = "bloodmnist/train_images.npy";
-    std::string train_labels_path = "bloodmnist/train_labels.npy";
+    std::vector<std::vector<double>> images; // Normalizadas [0,1]
+    std::vector<uint8_t> labels;
+    std::vector<unsigned long> images_shape;
+    std::vector<unsigned long> labels_shape;
+};
 
+BloodMnistData load_bloodmnist_train(const std::string &images_path, const std::string &labels_path)
+{
     std::vector<unsigned long> images_shape;
     std::vector<unsigned long> labels_shape;
 
-    // Cargar imágenes como uint8_t
-    std::vector<uint8_t> train_images = load_npy<uint8_t>(train_images_path, images_shape);
-    std::vector<uint8_t> train_labels = load_npy<uint8_t>(train_labels_path, labels_shape);
+    std::vector<uint8_t> train_images = load_npy<uint8_t>(images_path, images_shape);
+    std::vector<uint8_t> train_labels = load_npy<uint8_t>(labels_path, labels_shape);
 
-    size_t num_samples = images_shape[0]; // Número de imágenes
-    size_t height = images_shape[1];      // 28
-    size_t width = images_shape[2];       // 28
-    size_t channels = images_shape[3];    // 3 (RGB)
-
+    size_t num_samples = images_shape[0];
+    size_t height = images_shape[1];
+    size_t width = images_shape[2];
+    size_t channels = images_shape[3];
     size_t image_size = height * width * channels;
-    std::cout << "Número de muestras: " << num_samples << std::endl;
-    std::cout << "Dimensiones de imagen: (" << height << ", " << width << ", " << channels << ")" << std::endl;
 
-    // convertir a float y normalizar
-    std::vector<float> train_images_float(train_images.begin(), train_images.end());
-    for (float &pixel : train_images_float)
+    // Normalizar y convertir a vector de vectores
+    std::vector<std::vector<double>> images_vec(num_samples, std::vector<double>(image_size));
+    for (size_t i = 0; i < num_samples; ++i)
     {
-        pixel /= 255.0f; // Normalizar a [0, 1]
+        for (size_t j = 0; j < image_size; ++j)
+        {
+            images_vec[i][j] = train_images[i * image_size + j] / 255.0;
+        }
     }
 
-    std::cout << "Preprocesamiento completado." << std::endl;
-
-    return 0;
+    BloodMnistData data;
+    data.images = std::move(images_vec);
+    data.labels = std::move(train_labels);
+    data.images_shape = images_shape;
+    data.labels_shape = labels_shape;
+    return data;
 }

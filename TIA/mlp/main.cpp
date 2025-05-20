@@ -1,4 +1,8 @@
+#ifdef USE_CUDA
+#include "mlp_cuda.h"
+#else
 #include "mlp.h"
+#endif
 #include "load_bloodmnist.cpp"
 #include <vector>
 #include <iostream>
@@ -19,26 +23,33 @@ double mse(const std::vector<double> &y_true, const std::vector<double> &y_pred)
 
 int main()
 {
-    // dataset bloodmnist
+#ifdef USE_CUDA
+    std::cout << "Ejecutando con CUDA (GPU)" << std::endl;
+#else
+    std::cout << "Ejecutando en CPU" << std::endl;
+#endif
 
-    std::vector<std::vector<double>> X = {{0}, {1}};
-    std::vector<std::vector<double>> Y = {{0}, {1}};
+    std::cout << "Cargando dataset bloodmnist..." << std::endl;
+    BloodMnistData data = load_bloodmnist_train("bloodmnist/train_images.npy", "bloodmnist/train_labels.npy");
+    std::vector<std::vector<double>> X = data.images;
+    std::vector<std::vector<double>> Y(data.labels.size(), std::vector<double>(8, 0.0));
 
-    // MLP: 1 entrada, 2 ocultas, 1 salida
-    MLP mlp({1, 4, 1}, relu, relu_derivative);
+    // One-hot encoding para Y
+    for (size_t i = 0; i < data.labels.size(); ++i)
+        Y[i][data.labels[i]] = 1.0;
 
-    // Antes de entrenar
-    std::cout << "Antes de entrenar:\n";
-    for (size_t i = 0; i < X.size(); ++i)
+    std::cout << "Inicializando MLP..." << std::endl;
+    MLP mlp({2352, 128, 64, 8}, relu, relu_derivative);
+
+    std::cout << "Entrenando..." << std::endl;
+    int epochs = 100;
+    for (int epoch = 1; epoch <= epochs; ++epoch)
     {
-        auto pred = mlp.predict(X[i]);
-        std::cout << "Entrada: " << X[i][0] << " - Predicción: " << pred[0] << " - Real: " << Y[i][0] << "\n";
+        mlp.train(X, Y, 0.1, 1); // Entrena 1 epoch por vez
+        if (epoch % 10 == 0 || epoch == 1)
+            std::cout << "Epoch " << epoch << "/" << epochs << " completado." << std::endl;
     }
 
-    // Entrenamiento
-    mlp.train(X, Y, 0.01, 1000);
-
-    // Después de entrenar
     std::cout << "\nDespués de entrenar:\n";
     for (size_t i = 0; i < X.size(); ++i)
     {
@@ -46,7 +57,6 @@ int main()
         std::cout << "Entrada: " << X[i][0] << " - Predicción: " << pred[0] << " - Real: " << Y[i][0] << "\n";
     }
 
-    // Calcular MSE
     double total_mse = 0.0;
     for (size_t i = 0; i < X.size(); ++i)
         total_mse += mse(Y[i], mlp.predict(X[i]));
