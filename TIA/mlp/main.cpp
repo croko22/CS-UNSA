@@ -1,5 +1,5 @@
 #ifdef USE_CUDA
-#include "mlp_cuda.h"
+#include "mlp.cu"
 #else
 #include "mlp.h"
 #endif
