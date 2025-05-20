@@ -39,7 +39,12 @@ int main()
         Y[i][data.labels[i]] = 1.0;
 
     std::cout << "Inicializando MLP..." << std::endl;
+
+#ifdef USE_CUDA
+    MLP_CUDA mlp({2352, 128, 64, 8});
+#else
     MLP mlp({2352, 128, 64, 8}, relu, relu_derivative);
+#endif
 
     std::cout << "Entrenando..." << std::endl;
     int epochs = 100;
