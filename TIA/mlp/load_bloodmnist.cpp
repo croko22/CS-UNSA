@@ -51,3 +51,13 @@ BloodMnistData load_bloodmnist_train(const std::string &images_path, const std::
     data.labels_shape = labels_shape;
     return data;
 }
+
+double mse(const std::vector<double> &y_true, const std::vector<double> &y_pred)
+{
+    double sum = 0.0;
+    for (size_t i = 0; i < y_true.size(); ++i)
+    {
+        sum += (y_true[i] - y_pred[i]) * (y_true[i] - y_pred[i]);
+    }
+    return sum / y_true.size();
+}
