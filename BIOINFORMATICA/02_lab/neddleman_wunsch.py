@@ -42,7 +42,6 @@ def needleman_wunsch(seq1: str, seq2: str, match: int = 1, mismatch: int = -1, g
 
     backtrack(m, n, '', '')
 
-    # Convertir la matriz de flechitas a una representación de texto
     arrow_map = {'D': '↖', 'U': '↑', 'L': '←'}
     arrow_matrix = []
     for row in traceback:
