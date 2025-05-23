@@ -1,5 +1,5 @@
 import unittest
-from utils import is_substring, needleman_wunsch
+from utils import is_substring, needleman_wunsch, save_needleman_wunsch_output
 
 class TestBioinformaticsUtils(unittest.TestCase):
 
@@ -12,6 +12,7 @@ class TestBioinformaticsUtils(unittest.TestCase):
         S1 = "TACGCGC"
         S2 = "TCCGA"
         result = needleman_wunsch(S1, S2, match=1, mismatch=-1, gap=-2)
+        save_needleman_wunsch_output(result, 'output.txt')
         self.assertEqual(result['final_score'], -1)
         self.assertEqual(result['num_alignments'], 1)
         expected_alignments = [
