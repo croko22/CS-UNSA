@@ -1,4 +1,4 @@
-from utils import is_substring, needleman_wunsch, save_needleman_wunsch_output
+from neddleman_wunsch import needleman_wunsch, save_needleman_wunsch_output
 
 S1 = "TACGCGC"
 S2 = "TCCGA"

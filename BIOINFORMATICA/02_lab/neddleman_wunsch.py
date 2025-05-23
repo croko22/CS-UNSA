@@ -42,9 +42,22 @@ def needleman_wunsch(seq1: str, seq2: str, match: int = 1, mismatch: int = -1, g
 
     backtrack(m, n, '', '')
 
+    # Convertir la matriz de flechitas a una representación de texto
+    arrow_map = {'D': '↖', 'U': '↑', 'L': '←'}
+    arrow_matrix = []
+    for row in traceback:
+        arrow_row = []
+        for cell in row:
+            if not cell:
+                arrow_row.append('.')
+            else:
+                arrow_row.append(''.join(arrow_map[d] for d in cell))
+        arrow_matrix.append(arrow_row)
+
     return {
         'final_score': score_matrix[m][n],
         'score_matrix': score_matrix,
+        'arrow_matrix': arrow_matrix,
         'num_alignments': len(alignments),
         'alignments': alignments
     }
@@ -62,6 +75,9 @@ def save_needleman_wunsch_output(result: dict, filename: str):
         f.write("Matriz de scores:\n")
         for row in result['score_matrix']:
             f.write('\t'.join(map(str, row)) + '\n')
+        f.write("\nMatriz de flechas (trazado):\n")
+        for row in result['arrow_matrix']:
+            f.write('\t'.join(row) + '\n')
         f.write(f"\nCantidad de alineamientos: {result['num_alignments']}\n\n")
         f.write("Alineamientos generados:\n")
         for align1, align2 in result['alignments']:

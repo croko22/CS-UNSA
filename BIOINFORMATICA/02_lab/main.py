@@ -1,5 +1,5 @@
 import unittest
-from utils import is_substring, needleman_wunsch, save_needleman_wunsch_output
+from neddleman_wunsch import is_substring, needleman_wunsch, save_needleman_wunsch_output
 
 class TestBioinformaticsUtils(unittest.TestCase):
 
