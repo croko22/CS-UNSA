@@ -11,7 +11,7 @@ all: build $(TARGET)
 build:
 	mkdir -p build
 
-$(TARGET): $(SRC)
+$(TARGET): $(SRC) | build
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SRC)
 
 cuda: $(SRC) $(CUDA_SRC) | build
