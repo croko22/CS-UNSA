@@ -1,5 +1,5 @@
 #include "mlp.h"
-#include "load_bloodmnist.cpp"
+#include "utils/utils.cpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -78,8 +78,8 @@ int main()
     std::cout << "Cargando dataset bloodmnist..." << std::endl;
     auto start_load = std::chrono::high_resolution_clock::now();
 
-    BloodMnistData train_data = load_bloodmnist_train(train_images_path, train_labels_path);
-    BloodMnistData test_data = load_bloodmnist_train(test_images_path, test_labels_path);
+    BloodMnistData train_data = load_bloodmnist(train_images_path, train_labels_path);
+    BloodMnistData test_data = load_bloodmnist(test_images_path, test_labels_path);
 
     std::vector<std::vector<double>> X_train = train_data.images;
     std::vector<std::vector<double>> Y_train(train_data.labels.size(), std::vector<double>(8, 0.0));
@@ -103,7 +103,7 @@ int main()
 #ifdef USE_CUDA
     MLP_CUDA mlp({2352, 128, 64, 8});
 #else
-    MLP mlp({2352, 128, 64, 8}, MLP::sigmoid, MLP::sigmoidDerivative);
+    MLP mlp({2352, 128, 64, 8}, MLP::relu, MLP::reluDerivative);
 #endif
 
     std::cout << "Entrenando..." << std::endl;

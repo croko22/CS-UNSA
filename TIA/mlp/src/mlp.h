@@ -25,6 +25,8 @@ public:
     static double sigmoidDerivative(double x);
     static double relu(double x);
     static double reluDerivative(double x);
+    static double leaky_relu(double x, double alpha = 0.01);
+    static double leaky_relu_derivative(double x, double alpha = 0.01);
     static double tanh(double x);
     static double tanhDerivative(double x);
 

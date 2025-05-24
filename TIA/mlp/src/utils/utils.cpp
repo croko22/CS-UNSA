@@ -2,7 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <cmath>
-#include "npy.hpp"
+#include "../../include/npy.hpp"
 
 template <typename T>
 std::vector<T> load_npy(const std::string &filename, std::vector<unsigned long> &shape_out)
@@ -20,7 +20,7 @@ struct BloodMnistData
     std::vector<unsigned long> labels_shape;
 };
 
-BloodMnistData load_bloodmnist_train(const std::string &images_path, const std::string &labels_path)
+BloodMnistData load_bloodmnist(const std::string &images_path, const std::string &labels_path)
 {
     std::vector<unsigned long> images_shape;
     std::vector<unsigned long> labels_shape;
