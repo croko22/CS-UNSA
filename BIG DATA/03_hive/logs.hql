@@ -11,3 +11,11 @@ SELECT user_a, count(1) AS log_entries
 FROM logs
 GROUP BY user_a
 ORDER BY user_a;
+
+-- DROP TABLES
+DROP TABLE logs;
+DROP TABLE result;
+
+-- SELECT FROM TABLES
+SELECT * FROM logs LIMIT 10;
+SELECT * FROM result LIMIT 10;

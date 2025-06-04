@@ -33,5 +33,7 @@ DROP TABLE visits;
 DROP TABLE pages;
 DROP TABLE rank_result;
 
--- DROP TABLES
- SELECT * FROM pages LIMIT 10;
+-- SELECT FROM TABLES
+SELECT * FROM visits LIMIT 10;
+SELECT * FROM pages LIMIT 10;
+SELECT * FROM rank_result LIMIT 10;
