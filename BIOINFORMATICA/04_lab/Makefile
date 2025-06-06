@@ -1,16 +1,21 @@
 CXX = g++
 CXXFLAGS = -Wall -std=c++17 -fopenmp
 SRC = $(wildcard *.cpp)
-OBJ = $(SRC:.cpp=.o)
-TARGET = main
+OBJ = $(addprefix build/,$(SRC:.cpp=.o))
+TARGET = build/main
 
-all: $(TARGET)
+all: build $(TARGET)
 
 $(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $<
+build/%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+build:
+	mkdir -p build
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -rf build
+
+.PHONY: all cleans
