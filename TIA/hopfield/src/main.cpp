@@ -113,7 +113,6 @@ int main()
 
         for (int class_id = 0; class_id < 10; ++class_id)
         {
-
             size_t test_idx = 0;
             while (test_idx < test_data.labels.size() && test_data.labels[test_idx] != class_id)
             {
