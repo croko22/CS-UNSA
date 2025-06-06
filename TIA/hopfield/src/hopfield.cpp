@@ -120,25 +120,34 @@ double Hopfield::sign(double x)
 
 bool Hopfield::save(const std::string &filename) const
 {
-    std::ofstream file(filename, std::ios::binary);
+
+    std::ofstream file(filename);
     if (!file.is_open())
     {
         return false;
     }
 
-    file.write(reinterpret_cast<const char *>(&size_), sizeof(size_));
+    file << size_ << "\n";
 
+    file << "Weights:\n";
     for (const auto &row : weights_)
     {
-        file.write(reinterpret_cast<const char *>(row.data()), row.size() * sizeof(double));
+        for (double val : row)
+        {
+            file << val << " ";
+        }
+        file << "\n";
     }
 
-    size_t num_patterns = trained_patterns_.size();
-    file.write(reinterpret_cast<const char *>(&num_patterns), sizeof(num_patterns));
-
+    file << "Trained Patterns:\n";
+    file << trained_patterns_.size() << "\n";
     for (const auto &pattern : trained_patterns_)
     {
-        file.write(reinterpret_cast<const char *>(pattern.data()), pattern.size() * sizeof(double));
+        for (double val : pattern)
+        {
+            file << val << " ";
+        }
+        file << "\n";
     }
 
     return true;
