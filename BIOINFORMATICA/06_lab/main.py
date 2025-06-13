@@ -8,14 +8,18 @@ def read_distance_matrix(file_path):
         lines = f.readlines()
 
     n = len(lines)
-    matrix = np.zeros((n, n))
+    matrix = np.zeros((n + 1, n + 1))
 
     for i, line in enumerate(lines):
         parts = list(map(float, line.strip().split()))
-        for j in range(len(parts)):
-            matrix[i][j] = parts[j]
-            matrix[j][i] = parts[j]
-
+        for j in range(len(parts)):        
+            if j >= i:
+                matrix[i][j + 1] = parts[j]
+                matrix[j + 1][i] = parts[j]
+            else:
+                matrix[i + 1][j] = parts[j]
+                matrix[j][i + 1] = parts[j]
+    
     return matrix
 
 def find_pair(original_matrix, clusters, strategy='single'):
@@ -108,7 +112,7 @@ def main():
 
         save_steps(history, labels, f"{strategy}_linkage.txt")
         plot_dendrogram(history, labels, name, f"{strategy}_dendrogram.png")
-        print(f"✅ Resultados guardados para {name}")
+        print(f"Resultados guardados para {name}")
 
 if __name__ == "__main__":
     main()
