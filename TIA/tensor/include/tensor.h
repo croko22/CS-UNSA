@@ -36,6 +36,7 @@ public:
 
     float *get_data() const { return data_; }
     size_t get_size() const { return size_; }
+    const std::vector<int> &get_shape() const { return shape_; }
     int get_dims() const { return shape_.size(); }
 
     void print() const;
